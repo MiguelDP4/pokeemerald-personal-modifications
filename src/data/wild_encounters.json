@@ -380,9 +380,9 @@
                 "species": "SPECIES_TENTACOOL"
               },
               {
-                "min_level": 10,
-                "max_level": 30,
-                "species": "SPECIES_WAILMER"
+                "min_level": 5,
+                "max_level": 10,
+                "species": "SPECIES_MUDKIP"
               },
               {
                 "min_level": 30,
@@ -1834,8 +1834,8 @@
               },
               {
                 "min_level": 5,
-                "max_level": 5,
-                "species": "SPECIES_SLAKOTH"
+                "max_level": 10,
+                "species": "SPECIES_TREECKO"
               },
               {
                 "min_level": 6,
@@ -2761,9 +2761,9 @@
                 "species": "SPECIES_NUMEL"
               },
               {
-                "min_level": 22,
-                "max_level": 22,
-                "species": "SPECIES_SPOINK"
+                "min_level": 5,
+                "max_level": 10,
+                "species": "SPECIES_TORCHIC"
               },
               {
                 "min_level": 22,
