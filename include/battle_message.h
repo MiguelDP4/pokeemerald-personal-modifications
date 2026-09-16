@@ -218,6 +218,7 @@ void BufferStringBattle(u16 stringID);
 u32 BattleStringExpandPlaceholdersToDisplayedString(const u8 *src);
 u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst);
 void BattlePutTextOnWindow(const u8 *text, u8 windowId);
+void BuildExpGainedString(u8 *dst, u8 groupMask, u32 expAmount);
 void SetPPNumbersPaletteInMoveSelection(void);
 u8 GetCurrentPPToMaxPPState(u8 currentPP, u8 maxPP);
 

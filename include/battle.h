@@ -436,7 +436,11 @@ struct BattleStruct
     u8 atkCancelerTracker;
     struct BattleTvMovePoints tvMovePoints;
     struct BattleTv tv;
-    u8 unused_7[0x28];
+    u16 partyExp[PARTY_SIZE];
+    u8 expHandledMask;
+    u8 currentGroupMask;
+    u8 currentGroupMonId;
+    u8 unused_7[0x28 - (PARTY_SIZE * sizeof(u16) + 3)];
     u8 AI_monToSwitchIntoId[MAX_BATTLERS_COUNT];
     s8 arenaMindPoints[2];
     s8 arenaSkillPoints[2];

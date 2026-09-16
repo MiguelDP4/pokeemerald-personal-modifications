@@ -1956,6 +1956,154 @@ static const struct BattleWindowText *const sBattleTextOnWindowsInfo[] =
 
 static const u8 sRecordedBattleTextSpeeds[] = {8, 4, 1, 0};
 
+static const u8 sText_Comma[] = _(",");
+static const u8 sText_SpaceGained[] = _(" gained");
+static const u8 sText_GainedSpace[] = _("gained ");
+static const u8 sText_ExpPointsPrompt[] = _(" EXP. Points!\p");
+
+void BuildExpGainedString(u8 *dst, u8 groupMask, u32 expAmount)
+{
+    u8 monIds[PARTY_SIZE];
+    u8 numMons = 0;
+    u8 i;
+    u8 nick[POKEMON_NAME_LENGTH + 1];
+    u8 numStr[12];
+    u8 line1[128];
+    u8 line2[128];
+    u8 testLine[160];
+    u8 splitIdx = 0;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (groupMask & (1 << i))
+            monIds[numMons++] = i;
+    }
+
+    if (numMons == 0)
+    {
+        *dst = EOS;
+        return;
+    }
+
+    dst[0] = EOS;
+    ConvertIntToDecimalStringN(numStr, expAmount, STR_CONV_MODE_LEFT_ALIGN, 5);
+
+    // 1. Check if all names + " gained" fit on Line 1 (and "<xp> EXP. Points!\p" on Line 2)
+    line1[0] = EOS;
+    for (i = 0; i < numMons; i++)
+    {
+        GetMonData(&gPlayerParty[monIds[i]], MON_DATA_NICKNAME, nick);
+        StringGet_Nickname(nick);
+        if (i > 0)
+            StringAppend(line1, gText_CommaSpace);
+        StringAppend(line1, nick);
+    }
+
+    StringCopy(testLine, line1);
+    StringAppend(testLine, sText_SpaceGained);
+    if (GetStringWidth(FONT_NORMAL, testLine, 0) <= 200)
+    {
+        StringCopy(dst, testLine);
+        StringAppend(dst, gText_NewLine);
+        StringAppend(dst, numStr);
+        StringAppend(dst, sText_ExpPointsPrompt);
+        return;
+    }
+
+    // 2. Check if all names fit on Line 1 WITHOUT " gained"
+    // (and "gained <xp> EXP. Points!\p" on Line 2)
+    if (GetStringWidth(FONT_NORMAL, line1, 0) <= 200)
+    {
+        StringCopy(dst, line1);
+        StringAppend(dst, gText_NewLine);
+        StringAppend(dst, sText_GainedSpace);
+        StringAppend(dst, numStr);
+        StringAppend(dst, sText_ExpPointsPrompt);
+        return;
+    }
+
+    // 3. Names must be split across lines.
+    // Pack as many names as fit into Line 1 (with comma after the last one on line 1)
+    line1[0] = EOS;
+    for (i = 0; i < numMons; i++)
+    {
+        GetMonData(&gPlayerParty[monIds[i]], MON_DATA_NICKNAME, nick);
+        StringGet_Nickname(nick);
+
+        StringCopy(testLine, line1);
+        if (i > 0)
+            StringAppend(testLine, gText_CommaSpace);
+        StringAppend(testLine, nick);
+        if (i < numMons - 1)
+            StringAppend(testLine, sText_Comma);
+
+        if (i > 0 && GetStringWidth(FONT_NORMAL, testLine, 0) > 200)
+        {
+            splitIdx = i;
+            break;
+        }
+        else
+        {
+            if (i > 0)
+                StringAppend(line1, gText_CommaSpace);
+            StringAppend(line1, nick);
+        }
+    }
+
+    if (splitIdx == 0)
+        splitIdx = 1;
+
+    StringAppend(line1, sText_Comma);
+
+    // Build line 2 with remaining names
+    line2[0] = EOS;
+    for (i = splitIdx; i < numMons; i++)
+    {
+        GetMonData(&gPlayerParty[monIds[i]], MON_DATA_NICKNAME, nick);
+        StringGet_Nickname(nick);
+        if (i > splitIdx)
+            StringAppend(line2, gText_CommaSpace);
+        StringAppend(line2, nick);
+    }
+
+    // Check if line 2 can fit the full suffix: "<line2> gained <xp> EXP. Points!\p"
+    StringCopy(testLine, line2);
+    StringAppend(testLine, sText_SpaceGained);
+    StringAppend(testLine, gText_Space2);
+    StringAppend(testLine, numStr);
+    StringAppend(testLine, sText_ExpPointsPrompt);
+    if (GetStringWidth(FONT_NORMAL, testLine, 0) <= 200)
+    {
+        StringCopy(dst, line1);
+        StringAppend(dst, gText_NewLine);
+        StringAppend(dst, testLine);
+        return;
+    }
+
+    // Otherwise, line 2 has remaining names + " gained", and \l scroll for "<xp> EXP. Points!\p"
+    StringCopy(testLine, line2);
+    StringAppend(testLine, sText_SpaceGained);
+    if (GetStringWidth(FONT_NORMAL, testLine, 0) <= 200)
+    {
+        StringCopy(dst, line1);
+        StringAppend(dst, gText_NewLine);
+        StringAppend(dst, testLine);
+        StringAppend(dst, gText_LineBreak);
+        StringAppend(dst, numStr);
+        StringAppend(dst, sText_ExpPointsPrompt);
+    }
+    else
+    {
+        StringCopy(dst, line1);
+        StringAppend(dst, gText_NewLine);
+        StringAppend(dst, line2);
+        StringAppend(dst, gText_LineBreak);
+        StringAppend(dst, sText_GainedSpace);
+        StringAppend(dst, numStr);
+        StringAppend(dst, sText_ExpPointsPrompt);
+    }
+}
+
 void BufferStringBattle(u16 stringID)
 {
     s32 i;
@@ -2232,6 +2380,9 @@ void BufferStringBattle(u16 stringID)
             }
         }
         break;
+    case STRINGID_PKMNGAINEDEXP:
+        BuildExpGainedString(gDisplayedStringBattle, gBattleStruct->currentGroupMask, gBattleMoveDamage);
+        return;
     default: // load a string from the table
         if (stringID >= BATTLESTRINGS_COUNT)
         {
