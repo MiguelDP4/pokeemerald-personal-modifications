@@ -9,6 +9,7 @@ MauvilleCity_GameCorner_MapScripts::
 	.set TM_ICE_BEAM_COINS, 4000
 	.set DOLL_COINS, 1000
 	.set LUCKY_EGG_COINS, 7777
+	.set STONE_COINS, 5000
 
 	.set COINS_PRICE_50,  1000
 	.set COINS_PRICE_500, 10000
@@ -243,8 +244,28 @@ MauvilleCity_GameCorner_EventScript_PrizeCornerTMs::
 	faceplayer
 	msgbox MauvilleCity_GameCorner_Text_ExchangeCoinsForPrizes, MSGBOX_DEFAULT
 	checkitem ITEM_COIN_CASE
-	goto_if_eq VAR_RESULT, TRUE, MauvilleCity_GameCorner_EventScript_ChooseTMPrizeMessage
+	goto_if_eq VAR_RESULT, TRUE, MauvilleCity_GameCorner_EventScript_ChooseTMPrizeCategoryMessage
 	release
+	end
+
+MauvilleCity_GameCorner_EventScript_ChooseTMPrizeCategoryMessage::
+	message MauvilleCity_GameCorner_Text_WhichPrize
+	waitmessage
+	showcoinsbox 1, 1
+	goto MauvilleCity_GameCorner_EventScript_ChooseTMPrizeCategory
+
+MauvilleCity_GameCorner_EventScript_ReturnToChooseCategory::
+	message MauvilleCity_GameCorner_Text_WhichPrize
+	waitmessage
+	goto MauvilleCity_GameCorner_EventScript_ChooseTMPrizeCategory
+
+MauvilleCity_GameCorner_EventScript_ChooseTMPrizeCategory::
+	multichoice 12, 0, MULTI_GAME_CORNER_TM_CATEGORY, FALSE
+	switch VAR_RESULT
+	case 0, MauvilleCity_GameCorner_EventScript_ChooseTMPrize
+	case 1, MauvilleCity_GameCorner_EventScript_ChooseStonePrize
+	case 2, MauvilleCity_GameCorner_EventScript_CancelTMSelect
+	goto MauvilleCity_GameCorner_EventScript_CancelTMSelect
 	end
 
 MauvilleCity_GameCorner_EventScript_ChooseTMPrizeMessage::
@@ -267,8 +288,8 @@ MauvilleCity_GameCorner_EventScript_ChooseTMPrize::
 	case 2, MauvilleCity_GameCorner_EventScript_TMFlamethrower
 	case 3, MauvilleCity_GameCorner_EventScript_TMThunderbolt
 	case 4, MauvilleCity_GameCorner_EventScript_TMIceBeam
-	case 5, MauvilleCity_GameCorner_EventScript_CancelTMSelect
-	goto MauvilleCity_GameCorner_EventScript_CancelTMSelect
+	case 5, MauvilleCity_GameCorner_EventScript_ReturnToChooseCategory
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseCategory
 	end
 
 MauvilleCity_GameCorner_EventScript_TMDoubleTeam::
@@ -304,7 +325,7 @@ MauvilleCity_GameCorner_EventScript_TMIceBeam::
 MauvilleCity_GameCorner_EventScript_ConfirmTMPrize::
 	special BufferTMHMMoveName
 	msgbox MauvilleCity_GameCorner_Text_SoYourChoiceIsTheTMX, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, MauvilleCity_GameCorner_EventScript_CancelTMSelect
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_GameCorner_EventScript_ReturnToChooseTMPrize
 	switch VAR_TEMP_1
 	case 1, MauvilleCity_GameCorner_EventScript_BuyTMDoubleTeam
 	case 2, MauvilleCity_GameCorner_EventScript_BuyTMPsychic
@@ -386,6 +407,154 @@ MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForTM::
 MauvilleCity_GameCorner_EventScript_NoRoomForTM::
 	call Common_EventScript_BagIsFull
 	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseTMPrize
+	end
+
+MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize::
+	message MauvilleCity_GameCorner_Text_WhichPrize
+	waitmessage
+	goto MauvilleCity_GameCorner_EventScript_ChooseStonePrize
+
+MauvilleCity_GameCorner_EventScript_ChooseStonePrize::
+	multichoice 10, 0, MULTI_GAME_CORNER_STONES, FALSE
+	switch VAR_RESULT
+	case 0, MauvilleCity_GameCorner_EventScript_SunStone
+	case 1, MauvilleCity_GameCorner_EventScript_MoonStone
+	case 2, MauvilleCity_GameCorner_EventScript_FireStone
+	case 3, MauvilleCity_GameCorner_EventScript_ThunderStone
+	case 4, MauvilleCity_GameCorner_EventScript_WaterStone
+	case 5, MauvilleCity_GameCorner_EventScript_LeafStone
+	case 6, MauvilleCity_GameCorner_EventScript_ReturnToChooseCategory
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseCategory
+	end
+
+MauvilleCity_GameCorner_EventScript_SunStone::
+	setvar VAR_TEMP_1, 1
+	bufferitemname STR_VAR_1, ITEM_SUN_STONE
+	goto MauvilleCity_GameCorner_EventScript_ConfirmStonePrize
+
+MauvilleCity_GameCorner_EventScript_MoonStone::
+	setvar VAR_TEMP_1, 2
+	bufferitemname STR_VAR_1, ITEM_MOON_STONE
+	goto MauvilleCity_GameCorner_EventScript_ConfirmStonePrize
+
+MauvilleCity_GameCorner_EventScript_FireStone::
+	setvar VAR_TEMP_1, 3
+	bufferitemname STR_VAR_1, ITEM_FIRE_STONE
+	goto MauvilleCity_GameCorner_EventScript_ConfirmStonePrize
+
+MauvilleCity_GameCorner_EventScript_ThunderStone::
+	setvar VAR_TEMP_1, 4
+	bufferitemname STR_VAR_1, ITEM_THUNDER_STONE
+	goto MauvilleCity_GameCorner_EventScript_ConfirmStonePrize
+
+MauvilleCity_GameCorner_EventScript_WaterStone::
+	setvar VAR_TEMP_1, 5
+	bufferitemname STR_VAR_1, ITEM_WATER_STONE
+	goto MauvilleCity_GameCorner_EventScript_ConfirmStonePrize
+
+MauvilleCity_GameCorner_EventScript_LeafStone::
+	setvar VAR_TEMP_1, 6
+	bufferitemname STR_VAR_1, ITEM_LEAF_STONE
+	goto MauvilleCity_GameCorner_EventScript_ConfirmStonePrize
+
+MauvilleCity_GameCorner_EventScript_ConfirmStonePrize::
+	msgbox MauvilleCity_GameCorner_Text_SoYourChoiceIsX, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	switch VAR_TEMP_1
+	case 1, MauvilleCity_GameCorner_EventScript_BuySunStone
+	case 2, MauvilleCity_GameCorner_EventScript_BuyMoonStone
+	case 3, MauvilleCity_GameCorner_EventScript_BuyFireStone
+	case 4, MauvilleCity_GameCorner_EventScript_BuyThunderStone
+	case 5, MauvilleCity_GameCorner_EventScript_BuyWaterStone
+	case 6, MauvilleCity_GameCorner_EventScript_BuyLeafStone
+	end
+
+MauvilleCity_GameCorner_EventScript_BuySunStone::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, STONE_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone
+	checkitemspace ITEM_SUN_STONE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForStone
+	removecoins STONE_COINS
+	additem ITEM_SUN_STONE
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_BuyMoonStone::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, STONE_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone
+	checkitemspace ITEM_MOON_STONE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForStone
+	removecoins STONE_COINS
+	additem ITEM_MOON_STONE
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_BuyFireStone::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, STONE_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone
+	checkitemspace ITEM_FIRE_STONE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForStone
+	removecoins STONE_COINS
+	additem ITEM_FIRE_STONE
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_BuyThunderStone::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, STONE_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone
+	checkitemspace ITEM_THUNDER_STONE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForStone
+	removecoins STONE_COINS
+	additem ITEM_THUNDER_STONE
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_BuyWaterStone::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, STONE_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone
+	checkitemspace ITEM_WATER_STONE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForStone
+	removecoins STONE_COINS
+	additem ITEM_WATER_STONE
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_BuyLeafStone::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, STONE_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone
+	checkitemspace ITEM_LEAF_STONE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForStone
+	removecoins STONE_COINS
+	additem ITEM_LEAF_STONE
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForStone::
+	msgbox MauvilleCity_GameCorner_Text_NotEnoughCoins, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
+	end
+
+MauvilleCity_GameCorner_EventScript_NoRoomForStone::
+	call Common_EventScript_BagIsFull
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseStonePrize
 	end
 
 MauvilleCity_GameCorner_EventScript_CancelTMSelect::
