@@ -203,20 +203,47 @@ void ItemUseOutOfBattle_Bike(u8 taskId)
     s16 coordsY;
     s16 coordsX;
     u8 behavior;
+    bool8 isCurrentBike = FALSE;
+
+    if (gSpecialVar_ItemId == ITEM_MACH_BIKE && TestPlayerAvatarFlags(PLAYER_AVATAR_FLAG_MACH_BIKE))
+        isCurrentBike = TRUE;
+    else if (gSpecialVar_ItemId == ITEM_ACRO_BIKE && TestPlayerAvatarFlags(PLAYER_AVATAR_FLAG_ACRO_BIKE))
+        isCurrentBike = TRUE;
+
     PlayerGetDestCoords(&coordsX, &coordsY);
     behavior = MapGridGetMetatileBehaviorAt(coordsX, coordsY);
-    if (FlagGet(FLAG_SYS_CYCLING_ROAD) == TRUE || MetatileBehavior_IsVerticalRail(behavior) == TRUE || MetatileBehavior_IsHorizontalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedVerticalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedHorizontalRail(behavior) == TRUE)
+
+    if (isCurrentBike)
     {
-        DisplayCannotDismountBikeMessage(taskId, tUsingRegisteredKeyItem);
-    }
-    else if (Overworld_IsBikingAllowed() == TRUE && IsBikingDisallowedByPlayer() == 0)
-    {
-        sItemUseOnFieldCB = ItemUseOnFieldCB_Bike;
-        SetUpItemUseOnFieldCallback(taskId);
+        if (FlagGet(FLAG_SYS_CYCLING_ROAD) == TRUE || MetatileBehavior_IsVerticalRail(behavior) == TRUE || MetatileBehavior_IsHorizontalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedVerticalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedHorizontalRail(behavior) == TRUE)
+        {
+            DisplayCannotDismountBikeMessage(taskId, tUsingRegisteredKeyItem);
+        }
+        else
+        {
+            sItemUseOnFieldCB = ItemUseOnFieldCB_Bike;
+            SetUpItemUseOnFieldCallback(taskId);
+        }
     }
     else
     {
-        DisplayDadsAdviceCannotUseItemMessage(taskId, tUsingRegisteredKeyItem);
+        if (MetatileBehavior_IsVerticalRail(behavior) == TRUE || MetatileBehavior_IsHorizontalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedVerticalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedHorizontalRail(behavior) == TRUE)
+        {
+            DisplayCannotDismountBikeMessage(taskId, tUsingRegisteredKeyItem);
+        }
+        else if (MetatileBehavior_IsBumpySlope(behavior) == TRUE && gSpecialVar_ItemId == ITEM_MACH_BIKE)
+        {
+            DisplayDadsAdviceCannotUseItemMessage(taskId, tUsingRegisteredKeyItem);
+        }
+        else if (Overworld_IsBikingAllowed() == TRUE && IsBikingDisallowedByPlayer() == 0)
+        {
+            sItemUseOnFieldCB = ItemUseOnFieldCB_Bike;
+            SetUpItemUseOnFieldCallback(taskId);
+        }
+        else
+        {
+            DisplayDadsAdviceCannotUseItemMessage(taskId, tUsingRegisteredKeyItem);
+        }
     }
 }
 

@@ -4,7 +4,7 @@ MauvilleCity_BikeShop_MapScripts::
 MauvilleCity_BikeShop_EventScript_Rydel::
 	lock
 	faceplayer
-	goto_if_set FLAG_RECEIVED_BIKE, MauvilleCity_BikeShop_EventScript_AskSwitchBikes
+	goto_if_set FLAG_RECEIVED_BIKE, MauvilleCity_BikeShop_EventScript_RydelAfterBike
 	goto_if_set FLAG_DECLINED_BIKE, MauvilleCity_BikeShop_EventScript_SkipGreeting
 	msgbox MauvilleCity_BikeShop_Text_RydelGreeting, MSGBOX_DEFAULT
 	msgbox MauvilleCity_BikeShop_Text_DidYouComeFromFarAway, MSGBOX_YESNO
@@ -41,57 +41,88 @@ MauvilleCity_BikeShop_EventScript_YesFar::
 MauvilleCity_BikeShop_EventScript_GetMachBike::
 	msgbox MauvilleCity_BikeShop_Text_ChoseMachBike, MSGBOX_DEFAULT
 	giveitem ITEM_MACH_BIKE
-	goto MauvilleCity_BikeShop_EventScript_ComeBackToSwitchBikes
+	goto MauvilleCity_BikeShop_EventScript_FirstBikeOutro
 	end
 
 MauvilleCity_BikeShop_EventScript_GetAcroBike::
 	msgbox MauvilleCity_BikeShop_Text_ChoseAcroBike, MSGBOX_DEFAULT
 	giveitem ITEM_ACRO_BIKE
-	goto MauvilleCity_BikeShop_EventScript_ComeBackToSwitchBikes
+	goto MauvilleCity_BikeShop_EventScript_FirstBikeOutro
 	end
 
-MauvilleCity_BikeShop_EventScript_ComeBackToSwitchBikes::
-	msgbox MauvilleCity_BikeShop_Text_ComeBackToSwitchBikes, MSGBOX_DEFAULT
-	special SwapRegisteredBike
+MauvilleCity_BikeShop_EventScript_FirstBikeOutro::
+	msgbox MauvilleCity_BikeShop_Text_ComeBackToBuyOtherBike, MSGBOX_DEFAULT
 	release
 	end
 
-MauvilleCity_BikeShop_EventScript_AskSwitchBikes::
-	msgbox MauvilleCity_BikeShop_Text_WantToSwitchBikes, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, YES, MauvilleCity_BikeShop_EventScript_SwitchBikes
-	goto_if_eq VAR_RESULT, NO, MauvilleCity_BikeShop_EventScript_KeepBike
+MauvilleCity_BikeShop_EventScript_RydelAfterBike::
+	checkitem ITEM_MACH_BIKE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_BikeShop_EventScript_CheckOfferMachBike
+	checkitem ITEM_ACRO_BIKE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_BikeShop_EventScript_OfferAcroBike
+	msgbox MauvilleCity_BikeShop_Text_OwnBothBikes, MSGBOX_DEFAULT
+	release
 	end
 
-@ If the player does not have a bike on them Rydel assumes its stored in the PC
-MauvilleCity_BikeShop_EventScript_SwitchBikes::
-	msgbox MauvilleCity_BikeShop_Text_IllSwitchBikes, MSGBOX_DEFAULT
+MauvilleCity_BikeShop_EventScript_CheckOfferMachBike::
 	checkitem ITEM_ACRO_BIKE
-	goto_if_eq VAR_RESULT, TRUE, MauvilleCity_BikeShop_EventScript_SwitchAcroForMach
-	checkitem ITEM_MACH_BIKE
-	goto_if_eq VAR_RESULT, TRUE, MauvilleCity_BikeShop_EventScript_SwitchMachForAcro
+	goto_if_eq VAR_RESULT, TRUE, MauvilleCity_BikeShop_EventScript_OfferMachBike
 	msgbox MauvilleCity_BikeShop_Text_OhYourBikeIsInPC, MSGBOX_DEFAULT
 	release
 	end
 
-MauvilleCity_BikeShop_EventScript_KeepBike::
-	msgbox MauvilleCity_BikeShop_Text_HappyYouLikeIt, MSGBOX_DEFAULT
+MauvilleCity_BikeShop_EventScript_OfferAcroBike::
+	showmoneybox 0, 0
+	msgbox MauvilleCity_BikeShop_Text_WantToBuyAcroBike, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_BikeShop_EventScript_DeclineBuyBike
+	checkmoney 500000
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_BikeShop_EventScript_NotEnoughMoney
+	checkitemspace ITEM_ACRO_BIKE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_BikeShop_EventScript_BagIsFull
+	removemoney 500000
+	updatemoneybox
+	playse SE_SHOP
+	msgbox MauvilleCity_BikeShop_Text_ThankYouSoldAcroBike, MSGBOX_DEFAULT
+	giveitem ITEM_ACRO_BIKE
+	hidemoneybox
+	msgbox MauvilleCity_BikeShop_Text_NowYouOwnBothBikes, MSGBOX_DEFAULT
 	release
 	end
 
-MauvilleCity_BikeShop_EventScript_SwitchAcroForMach::
-	incrementgamestat GAME_STAT_TRADED_BIKES
-	msgbox MauvilleCity_BikeShop_Text_ExchangedAcroForMach, MSGBOX_DEFAULT
-	removeitem ITEM_ACRO_BIKE
+MauvilleCity_BikeShop_EventScript_OfferMachBike::
+	showmoneybox 0, 0
+	msgbox MauvilleCity_BikeShop_Text_WantToBuyMachBike, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_BikeShop_EventScript_DeclineBuyBike
+	checkmoney 500000
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_BikeShop_EventScript_NotEnoughMoney
+	checkitemspace ITEM_MACH_BIKE
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_BikeShop_EventScript_BagIsFull
+	removemoney 500000
+	updatemoneybox
+	playse SE_SHOP
+	msgbox MauvilleCity_BikeShop_Text_ThankYouSoldMachBike, MSGBOX_DEFAULT
 	giveitem ITEM_MACH_BIKE
-	goto MauvilleCity_BikeShop_EventScript_ComeBackToSwitchBikes
+	hidemoneybox
+	msgbox MauvilleCity_BikeShop_Text_NowYouOwnBothBikes, MSGBOX_DEFAULT
+	release
 	end
 
-MauvilleCity_BikeShop_EventScript_SwitchMachForAcro::
-	incrementgamestat GAME_STAT_TRADED_BIKES
-	msgbox MauvilleCity_BikeShop_Text_ExchangedMachForAcro, MSGBOX_DEFAULT
-	removeitem ITEM_MACH_BIKE
-	giveitem ITEM_ACRO_BIKE
-	goto MauvilleCity_BikeShop_EventScript_ComeBackToSwitchBikes
+MauvilleCity_BikeShop_EventScript_DeclineBuyBike::
+	msgbox MauvilleCity_BikeShop_Text_HappyYouLikeIt, MSGBOX_DEFAULT
+	hidemoneybox
+	release
+	end
+
+MauvilleCity_BikeShop_EventScript_NotEnoughMoney::
+	msgbox MauvilleCity_BikeShop_Text_NotEnoughMoney, MSGBOX_DEFAULT
+	hidemoneybox
+	release
+	end
+
+MauvilleCity_BikeShop_EventScript_BagIsFull::
+	msgbox gText_TooBadBagIsFull, MSGBOX_DEFAULT
+	hidemoneybox
+	release
 	end
 
 MauvilleCity_BikeShop_EventScript_Assistant::
@@ -220,25 +251,53 @@ MauvilleCity_BikeShop_Text_ChoseMachBike:
 MauvilleCity_BikeShop_Text_ChoseAcroBike:
 	.string "{PLAYER} chose the ACRO BIKE.$"
 
-MauvilleCity_BikeShop_Text_ComeBackToSwitchBikes:
-	.string "RYDEL: If you get the urge to switch\n"
-	.string "BIKES, just come see me!$"
+MauvilleCity_BikeShop_Text_ComeBackToBuyOtherBike:
+	.string "RYDEL: If you ever want the other model\n"
+	.string "as well, come see me!\l"
+	.string "I can sell it to you for ¥500,000!$"
 
-MauvilleCity_BikeShop_Text_WantToSwitchBikes:
-	.string "RYDEL: Oh? Were you thinking about\n"
-	.string "switching BIKES?$"
+MauvilleCity_BikeShop_Text_OwnBothBikes:
+	.string "RYDEL: Well, look at you!\n"
+	.string "You're riding both of my proudest\l"
+	.string "creations!\p"
+	.string "May the wind always be at your back\n"
+	.string "on your adventure!$"
 
-MauvilleCity_BikeShop_Text_IllSwitchBikes:
-	.string "RYDEL: Okay, no problem!\n"
-	.string "I'll switch BIKES for you!$"
+MauvilleCity_BikeShop_Text_WantToBuyAcroBike:
+	.string "RYDEL: Oh! Are you enjoying that\n"
+	.string "MACH BIKE?\p"
+	.string "Say, would you like to own an\n"
+	.string "ACRO BIKE as well?\p"
+	.string "I can sell you one for ¥500,000!\n"
+	.string "Interested?$"
 
-MauvilleCity_BikeShop_Text_ExchangedMachForAcro:
-	.string "{PLAYER} got the MACH BIKE exchanged\n"
-	.string "for an ACRO BIKE.$"
+MauvilleCity_BikeShop_Text_WantToBuyMachBike:
+	.string "RYDEL: Oh! Are you enjoying that\n"
+	.string "ACRO BIKE?\p"
+	.string "Say, would you like to own a\n"
+	.string "MACH BIKE as well?\p"
+	.string "I can sell you one for ¥500,000!\n"
+	.string "Interested?$"
 
-MauvilleCity_BikeShop_Text_ExchangedAcroForMach:
-	.string "{PLAYER} got the ACRO BIKE exchanged\n"
-	.string "for a MACH BIKE.$"
+MauvilleCity_BikeShop_Text_ThankYouSoldAcroBike:
+	.string "RYDEL: All right! Here is your brand-new\n"
+	.string "ACRO BIKE!$"
+
+MauvilleCity_BikeShop_Text_ThankYouSoldMachBike:
+	.string "RYDEL: All right! Here is your brand-new\n"
+	.string "MACH BIKE!$"
+
+MauvilleCity_BikeShop_Text_NowYouOwnBothBikes:
+	.string "RYDEL: With both BIKES in your hands,\n"
+	.string "there's no place in HOENN you can't reach!\p"
+	.string "May the wind always be at your back\n"
+	.string "on your adventure!$"
+
+MauvilleCity_BikeShop_Text_NotEnoughMoney:
+	.string "RYDEL: Hmm… Looks like you don't\n"
+	.string "have enough money.\p"
+	.string "Come back once you've saved up\n"
+	.string "¥500,000!$"
 
 MauvilleCity_BikeShop_Text_HappyYouLikeIt:
 	.string "RYDEL: Good, good!\n"
