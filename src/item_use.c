@@ -655,6 +655,29 @@ void ItemUseOutOfBattle_CoinCase(u8 taskId)
     }
 }
 
+void ItemUseOutOfBattle_ExpShare(u8 taskId)
+{
+    if (FlagGet(FLAG_EXP_SHARE_ENABLED))
+    {
+        FlagClear(FLAG_EXP_SHARE_ENABLED);
+        StringCopy(gStringVar4, gText_ExpShareTurnedOff);
+    }
+    else
+    {
+        FlagSet(FLAG_EXP_SHARE_ENABLED);
+        StringCopy(gStringVar4, gText_ExpShareTurnedOn);
+    }
+
+    if (!gTasks[taskId].tUsingRegisteredKeyItem)
+    {
+        DisplayItemMessage(taskId, FONT_NORMAL, gStringVar4, CloseItemMessage);
+    }
+    else
+    {
+        DisplayItemMessageOnField(taskId, gStringVar4, Task_CloseCantUseKeyItemMessage);
+    }
+}
+
 void ItemUseOutOfBattle_PowderJar(u8 taskId)
 {
     ConvertIntToDecimalStringN(gStringVar1, GetBerryPowder(), STR_CONV_MODE_LEFT_ALIGN, 5);

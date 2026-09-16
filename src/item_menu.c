@@ -88,6 +88,8 @@ enum {
     ACTION_SHOW,
     ACTION_GIVE_FAVOR_LADY,
     ACTION_CONFIRM_QUIZ_LADY,
+    ACTION_TURN_ON,
+    ACTION_TURN_OFF,
     ACTION_DUMMY,
 };
 
@@ -278,6 +280,8 @@ static const struct MenuAction sItemMenuActions[] = {
     [ACTION_SHOW]              = {gMenuText_Show,     {ItemMenu_Show}},
     [ACTION_GIVE_FAVOR_LADY]   = {gMenuText_Give2,    {ItemMenu_GiveFavorLady}},
     [ACTION_CONFIRM_QUIZ_LADY] = {gMenuText_Confirm,  {ItemMenu_ConfirmQuizLady}},
+    [ACTION_TURN_ON]           = {gMenuText_TurnOn,   {ItemMenu_UseOutOfBattle}},
+    [ACTION_TURN_OFF]          = {gMenuText_TurnOff,  {ItemMenu_UseOutOfBattle}},
     [ACTION_DUMMY]             = {gText_EmptyString2, {NULL}}
 };
 
@@ -1622,6 +1626,13 @@ static void OpenContextMenu(u8 taskId)
                 {
                     if (TestPlayerAvatarFlags(PLAYER_AVATAR_FLAG_MACH_BIKE | PLAYER_AVATAR_FLAG_ACRO_BIKE))
                         gBagMenu->contextMenuItemsBuffer[0] = ACTION_WALK;
+                }
+                else if (gSpecialVar_ItemId == ITEM_EXP_SHARE)
+                {
+                    if (FlagGet(FLAG_EXP_SHARE_ENABLED))
+                        gBagMenu->contextMenuItemsBuffer[0] = ACTION_TURN_OFF;
+                    else
+                        gBagMenu->contextMenuItemsBuffer[0] = ACTION_TURN_ON;
                 }
                 break;
             case BALLS_POCKET:
