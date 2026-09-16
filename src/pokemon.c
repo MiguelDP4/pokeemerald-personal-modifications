@@ -14,6 +14,7 @@
 #include "evolution_scene.h"
 #include "field_specials.h"
 #include "item.h"
+#include "item_use.h"
 #include "link.h"
 #include "main.h"
 #include "overworld.h"
@@ -4722,6 +4723,18 @@ void CopyPlayerPartyMonToBattleData(u8 battler, u8 partyIndex)
 
 bool8 ExecuteTableBasedItemEffect(struct Pokemon *mon, u16 item, u8 partyIndex, u8 moveIndex)
 {
+    if (GetItemFieldFunc(item) == ItemUseOutOfBattle_EvolutionStone)
+    {
+        u16 targetSpecies = GetEvolutionTargetSpecies(mon, EVO_MODE_ITEM_USE, item);
+
+        if (targetSpecies != SPECIES_NONE)
+        {
+            BeginEvolutionScene(mon, targetSpecies, FALSE, partyIndex);
+            return FALSE;
+        }
+        return TRUE;
+    }
+
     return PokemonUseItemEffects(mon, item, partyIndex, moveIndex, FALSE);
 }
 
