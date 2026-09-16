@@ -2474,6 +2474,11 @@ static void CalculatePokeblock(struct BlenderBerry *berries, struct Pokeblock *p
         }
     }
 
+    for (i = 0; i < FLAVOR_COUNT; i++)
+    {
+        sPokeblockFlavors[i] *= 10;
+    }
+
     for (i = 0; i < FLAVOR_COUNT + 1; i++)
     {
         if (sPokeblockFlavors[i] > 255)
