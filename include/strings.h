@@ -1193,6 +1193,7 @@ extern const u8 gText_GlassDesk[];
 extern const u8 gText_TreeckoDollAndPrice[];
 extern const u8 gText_TorchicDollAndPrice[];
 extern const u8 gText_MudkipDollAndPrice[];
+extern const u8 gText_LuckyEggAndPrice[];
 extern const u8 gText_TM32AndPrice[];
 extern const u8 gText_TM29AndPrice[];
 extern const u8 gText_TM35AndPrice[];

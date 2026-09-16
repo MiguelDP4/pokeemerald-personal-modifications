@@ -8,6 +8,7 @@ MauvilleCity_GameCorner_MapScripts::
 	.set TM_THUNDERBOLT_COINS, 4000
 	.set TM_ICE_BEAM_COINS, 4000
 	.set DOLL_COINS, 1000
+	.set LUCKY_EGG_COINS, 7777
 
 	.set COINS_PRICE_50,  1000
 	.set COINS_PRICE_500, 10000
@@ -126,7 +127,8 @@ MauvilleCity_GameCorner_EventScript_ChooseDollPrize::
 	case 0, MauvilleCity_GameCorner_EventScript_TreeckoDoll
 	case 1, MauvilleCity_GameCorner_EventScript_TorchicDoll
 	case 2, MauvilleCity_GameCorner_EventScript_MudkipDoll
-	case 3, MauvilleCity_GameCorner_EventScript_CancelDollSelect
+	case 3, MauvilleCity_GameCorner_EventScript_LuckyEgg
+	case 4, MauvilleCity_GameCorner_EventScript_CancelDollSelect
 	goto MauvilleCity_GameCorner_EventScript_CancelDollSelect
 	end
 
@@ -145,6 +147,11 @@ MauvilleCity_GameCorner_EventScript_MudkipDoll::
 	bufferdecorationname STR_VAR_1, DECOR_MUDKIP_DOLL
 	goto MauvilleCity_GameCorner_EventScript_ConfirmDollPrize
 
+MauvilleCity_GameCorner_EventScript_LuckyEgg::
+	setvar VAR_TEMP_1, 4
+	bufferitemname STR_VAR_1, ITEM_LUCKY_EGG
+	goto MauvilleCity_GameCorner_EventScript_ConfirmDollPrize
+
 MauvilleCity_GameCorner_EventScript_ConfirmDollPrize::
 	msgbox MauvilleCity_GameCorner_Text_SoYourChoiceIsX, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, MauvilleCity_GameCorner_EventScript_CancelDollSelect
@@ -152,6 +159,7 @@ MauvilleCity_GameCorner_EventScript_ConfirmDollPrize::
 	case 1, MauvilleCity_GameCorner_EventScript_BuyTreeckoDoll
 	case 2, MauvilleCity_GameCorner_EventScript_BuyTorchicDoll
 	case 3, MauvilleCity_GameCorner_EventScript_BuyMudkipDoll
+	case 4, MauvilleCity_GameCorner_EventScript_BuyLuckyEgg
 	end
 
 MauvilleCity_GameCorner_EventScript_BuyTreeckoDoll::
@@ -193,6 +201,24 @@ MauvilleCity_GameCorner_EventScript_BuyMudkipDoll::
 	updatecoinsbox 1, 1
 	playse SE_SHOP
 	msgbox MauvilleCity_GameCorner_Text_SendToYourHomePC, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseDollPrize
+	end
+
+MauvilleCity_GameCorner_EventScript_BuyLuckyEgg::
+	checkcoins VAR_TEMP_2
+	goto_if_lt VAR_TEMP_2, LUCKY_EGG_COINS, MauvilleCity_GameCorner_EventScript_NotEnoughCoinsForDoll
+	checkitemspace ITEM_LUCKY_EGG
+	goto_if_eq VAR_RESULT, FALSE, MauvilleCity_GameCorner_EventScript_NoRoomForLuckyEgg
+	removecoins LUCKY_EGG_COINS
+	additem ITEM_LUCKY_EGG
+	updatecoinsbox 1, 1
+	playse SE_SHOP
+	msgbox MauvilleCity_GameCorner_Text_HereYouGo, MSGBOX_DEFAULT
+	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseDollPrize
+	end
+
+MauvilleCity_GameCorner_EventScript_NoRoomForLuckyEgg::
+	call Common_EventScript_BagIsFull
 	goto MauvilleCity_GameCorner_EventScript_ReturnToChooseDollPrize
 	end
 
