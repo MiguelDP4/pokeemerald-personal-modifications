@@ -1833,29 +1833,41 @@ static void Task_PrintSpinResult(u8 taskId)
 
 static void Task_GivePayout(u8 taskId)
 {
-    switch (gTasks[taskId].data[7])
+    if (JOY_NEW(A_BUTTON | START_BUTTON))
     {
-    case 0:
-        gTasks[taskId].tCoins++;
-        m4aSongNumStart(SE_PIN);
+        gTasks[taskId].tCoins += gTasks[taskId].tPayout;
+        if (gTasks[taskId].tCoins > MAX_COINS)
+            gTasks[taskId].tCoins = MAX_COINS;
+        gTasks[taskId].tPayout = 0;
         SetCreditDigits(gTasks[taskId].tCoins);
-        if (gTasks[taskId].tCoins >= MAX_COINS)
-        {
-            gTasks[taskId].tPayout = 0;
-        }
-        else
-        {
-            gTasks[taskId].tPayout--;
-            gTasks[taskId].data[7]++;
-        }
-        break;
-    case 3:
         m4aSongNumStop(SE_PIN);
-        gTasks[taskId].data[7] = 0;
-        break;
-    default:
-        gTasks[taskId].data[7]++;
-        break;
+    }
+    else
+    {
+        switch (gTasks[taskId].data[7])
+        {
+        case 0:
+            gTasks[taskId].tCoins++;
+            m4aSongNumStart(SE_PIN);
+            SetCreditDigits(gTasks[taskId].tCoins);
+            if (gTasks[taskId].tCoins >= MAX_COINS)
+            {
+                gTasks[taskId].tPayout = 0;
+            }
+            else
+            {
+                gTasks[taskId].tPayout--;
+                gTasks[taskId].data[7]++;
+            }
+            break;
+        case 3:
+            m4aSongNumStop(SE_PIN);
+            gTasks[taskId].data[7] = 0;
+            break;
+        default:
+            gTasks[taskId].data[7]++;
+            break;
+        }
     }
     if (gTasks[taskId].tPayout == 0)
         StartTaskAfterDelayOrInput(taskId, Task_EndTurn, NO_DELAY, A_BUTTON | B_BUTTON);
@@ -1863,12 +1875,12 @@ static void Task_GivePayout(u8 taskId)
 
 static void Task_PrintPayout(u8 taskId)
 {
-    ConvertIntToDecimalStringN(gStringVar1, (sRoulette->minBet * gTasks[taskId].tMultiplier), STR_CONV_MODE_LEFT_ALIGN, 2);
+    ConvertIntToDecimalStringN(gStringVar1, (sRoulette->minBet * gTasks[taskId].tMultiplier * 6), STR_CONV_MODE_LEFT_ALIGN, 4);
     StringExpandPlaceholders(gStringVar4, Roulette_Text_YouveWonXCoins);
     DrawStdWindowFrame(sTextWindowId, FALSE);
     AddTextPrinterParameterized(sTextWindowId, FONT_NORMAL, gStringVar4, 0, 1, TEXT_SKIP_DRAW, NULL);
     CopyWindowToVram(sTextWindowId, COPYWIN_FULL);
-    gTasks[taskId].tPayout = (sRoulette->minBet * gTasks[taskId].tMultiplier);
+    gTasks[taskId].tPayout = (sRoulette->minBet * gTasks[taskId].tMultiplier * 6);
     gTasks[taskId].data[7] = 0;
     gTasks[taskId].func = Task_GivePayout;
 }

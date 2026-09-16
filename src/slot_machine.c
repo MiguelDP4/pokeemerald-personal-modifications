@@ -5503,15 +5503,15 @@ static const u16 sSlotMatchFlags[] = {
 };
 
 static const u16 sSlotPayouts[] = {
-    [MATCH_CHERRY]        = 2,
-    [MATCH_TOPBOT_CHERRY] = 4,
+    [MATCH_CHERRY]        = 12,
+    [MATCH_TOPBOT_CHERRY] = 24,
     [MATCH_REPLAY]        = 0,
-    [MATCH_LOTAD]         = 6,
-    [MATCH_AZURILL]       = 12,
-    [MATCH_POWER]         = 3,
-    [MATCH_MIXED_7]       = 90,
-    [MATCH_RED_7]         = 300,
-    [MATCH_BLUE_7]        = 300
+    [MATCH_LOTAD]         = 36,
+    [MATCH_AZURILL]       = 72,
+    [MATCH_POWER]         = 18,
+    [MATCH_MIXED_7]       = 540,
+    [MATCH_RED_7]         = 1800,
+    [MATCH_BLUE_7]        = 1800
 };
 
 static const s16 sDigitalDisplay_SpriteCoords[][2] = {
