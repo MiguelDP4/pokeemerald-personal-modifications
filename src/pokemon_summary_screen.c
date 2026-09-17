@@ -741,7 +741,7 @@ static const u8 sButtons_Gfx[][4 * TILE_SIZE_4BPP] = {
     INCGFX_U8("graphics/summary_screen/b_button.png", ".4bpp"),
 };
 
-static const u8 sSkillsBannerTiles_EVs[7 * 32] = {
+static const u8 sSkillsBannerTiles_EVs[7 * 32] ALIGNED(4) = {
     0x77, 0x22, 0x22, 0x62, 0x77, 0x62, 0x66, 0x66,
     0x77, 0x62, 0x77, 0x77, 0x77, 0x22, 0x22, 0x76,
     0x77, 0x62, 0x66, 0x76, 0x77, 0x62, 0x77, 0x77,
@@ -772,7 +772,7 @@ static const u8 sSkillsBannerTiles_EVs[7 * 32] = {
     0x77, 0x77, 0x77, 0x88, 0x77, 0x77, 0x77, 0x88,
 };
 
-static const u8 sSkillsBannerTiles_IVs[7 * 32] = {
+static const u8 sSkillsBannerTiles_IVs[7 * 32] ALIGNED(4) = {
     0x77, 0x22, 0x22, 0x62, 0x77, 0x66, 0x62, 0x66,
     0x77, 0x77, 0x62, 0x77, 0x77, 0x77, 0x62, 0x77,
     0x77, 0x77, 0x62, 0x77, 0x77, 0x77, 0x62, 0x77,
@@ -1460,6 +1460,8 @@ static bool8 DecompressGraphics(void)
         break;
     case 12:
         LoadCompressedPalette(gMoveTypes_Pal, OBJ_PLTT_ID(13), 3 * PLTT_SIZE_4BPP);
+        CpuCopy16(sSkillsBannerTiles_EVs, (void *)(BG_CHAR_ADDR(2) + TILE_SKILLS_EVS_START * 32), sizeof(sSkillsBannerTiles_EVs));
+        CpuCopy16(sSkillsBannerTiles_IVs, (void *)(BG_CHAR_ADDR(2) + TILE_SKILLS_IVS_START * 32), sizeof(sSkillsBannerTiles_IVs));
         LoadBgTiles(1, sSkillsBannerTiles_EVs, sizeof(sSkillsBannerTiles_EVs), TILE_SKILLS_EVS_START);
         LoadBgTiles(1, sSkillsBannerTiles_IVs, sizeof(sSkillsBannerTiles_IVs), TILE_SKILLS_IVS_START);
         sMonSummaryScreen->switchCounter = 0;
