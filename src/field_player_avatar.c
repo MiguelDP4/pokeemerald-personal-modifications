@@ -1304,7 +1304,7 @@ bool8 PartyHasMonWithSurf(void)
         {
             if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) == SPECIES_NONE)
                 break;
-            if (MonKnowsMove(&gPlayerParty[i], MOVE_SURF))
+            if (!GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG) && MonKnowsWaterFieldMove(&gPlayerParty[i]))
                 return TRUE;
         }
     }

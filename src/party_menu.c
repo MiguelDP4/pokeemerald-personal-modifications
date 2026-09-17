@@ -2604,9 +2604,21 @@ static void SetPartyMonSelectionActions(struct Pokemon *mons, u8 slotId, u8 acti
     }
 }
 
+static bool8 PartyMenuHasAction(u8 action)
+{
+    u8 i;
+    for (i = 0; i < sPartyMenuInternal->numActions; i++)
+    {
+        if (sPartyMenuInternal->actions[i] == action)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 static void SetPartyMonFieldSelectionActions(struct Pokemon *mons, u8 slotId)
 {
     u8 i, j;
+    u8 reservedTrailingActions;
 
     sPartyMenuInternal->numActions = 0;
     AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, MENU_SUMMARY);
@@ -2622,6 +2634,29 @@ static void SetPartyMonFieldSelectionActions(struct Pokemon *mons, u8 slotId)
                 break;
             }
         }
+    }
+
+    // Calculate reserved trailing actions so we never exceed the 8-item menu limit
+    reservedTrailingActions = 1; // MENU_CANCEL1
+    if (!InBattlePike())
+    {
+        if (GetMonData(&mons[1], MON_DATA_SPECIES) != SPECIES_NONE)
+            reservedTrailingActions++;
+        reservedTrailingActions++; // MENU_MAIL or MENU_ITEM
+    }
+
+    // If the mon knows any water field move (Surf, Dive, Waterfall), grant access to the others
+    // once their respective gym badges are unlocked.
+    if (MonKnowsWaterFieldMove(&mons[slotId]))
+    {
+        u8 maxFieldActions = 8 - reservedTrailingActions;
+
+        if (FlagGet(FLAG_BADGE05_GET) && sPartyMenuInternal->numActions < maxFieldActions && !PartyMenuHasAction(FIELD_MOVE_SURF + MENU_FIELD_MOVES))
+            AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, FIELD_MOVE_SURF + MENU_FIELD_MOVES);
+        if (FlagGet(FLAG_BADGE07_GET) && sPartyMenuInternal->numActions < maxFieldActions && !PartyMenuHasAction(FIELD_MOVE_DIVE + MENU_FIELD_MOVES))
+            AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, FIELD_MOVE_DIVE + MENU_FIELD_MOVES);
+        if (FlagGet(FLAG_BADGE08_GET) && sPartyMenuInternal->numActions < maxFieldActions && !PartyMenuHasAction(FIELD_MOVE_WATERFALL + MENU_FIELD_MOVES))
+            AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, FIELD_MOVE_WATERFALL + MENU_FIELD_MOVES);
     }
 
     if (!InBattlePike())
@@ -4713,6 +4748,13 @@ bool8 MonKnowsMove(struct Pokemon *mon, u16 move)
             return TRUE;
     }
     return FALSE;
+}
+
+bool8 MonKnowsWaterFieldMove(struct Pokemon *mon)
+{
+    return MonKnowsMove(mon, MOVE_SURF)
+        || MonKnowsMove(mon, MOVE_DIVE)
+        || MonKnowsMove(mon, MOVE_WATERFALL);
 }
 
 static void DisplayLearnMoveMessage(const u8 *str)

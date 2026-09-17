@@ -1728,6 +1728,25 @@ bool8 ScrCmd_checkpartymove(struct ScriptContext *ctx)
             break;
         }
     }
+
+    // If looking for a water field move (Surf, Dive, Waterfall) and no mon directly knows it,
+    // allow any mon that knows another water field move to perform it.
+    if (gSpecialVar_Result == PARTY_SIZE && (move == MOVE_SURF || move == MOVE_DIVE || move == MOVE_WATERFALL))
+    {
+        for (i = 0; i < PARTY_SIZE; i++)
+        {
+            u16 species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
+            if (!species)
+                break;
+            if (!GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG) && MonKnowsWaterFieldMove(&gPlayerParty[i]))
+            {
+                gSpecialVar_Result = i;
+                gSpecialVar_0x8004 = species;
+                break;
+            }
+        }
+    }
+
     return FALSE;
 }
 
