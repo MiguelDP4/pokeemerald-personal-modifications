@@ -399,7 +399,7 @@ static u8 TextSpeed_ProcessInput(u8 selection)
 {
     if (JOY_NEW(DPAD_RIGHT))
     {
-        if (selection <= 1)
+        if (selection <= 2)
             selection++;
         else
             selection = 0;
@@ -411,7 +411,7 @@ static u8 TextSpeed_ProcessInput(u8 selection)
         if (selection != 0)
             selection--;
         else
-            selection = 2;
+            selection = 3;
 
         sArrowPressed = TRUE;
     }
@@ -420,25 +420,38 @@ static u8 TextSpeed_ProcessInput(u8 selection)
 
 static void TextSpeed_DrawChoices(u8 selection)
 {
-    u8 styles[3];
-    s32 widthSlow, widthMid, widthFast, xMid;
+    u8 styles[4];
+    s32 widthSlow, widthMid, widthFast, widthInstant;
+    s32 totalTextWidth, spacing;
+    s32 xSlow, xMid, xFast, xInstant;
 
     styles[0] = 0;
     styles[1] = 0;
     styles[2] = 0;
+    styles[3] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_TextSpeedSlow, 104, YPOS_TEXTSPEED, styles[0]);
+    FillWindowPixelRect(WIN_OPTIONS, PIXEL_FILL(1), 76, YPOS_TEXTSPEED, 130, 16);
 
     widthSlow = GetStringWidth(FONT_NORMAL, gText_TextSpeedSlow, 0);
     widthMid = GetStringWidth(FONT_NORMAL, gText_TextSpeedMid, 0);
     widthFast = GetStringWidth(FONT_NORMAL, gText_TextSpeedFast, 0);
+    widthInstant = GetStringWidth(FONT_NORMAL, gText_TextSpeedInstant, 0);
 
-    widthMid -= 94;
-    xMid = (widthSlow - widthMid - widthFast) / 2 + 104;
+    totalTextWidth = widthSlow + widthMid + widthFast + widthInstant;
+    spacing = (118 - totalTextWidth) / 3;
+    if (spacing < 3)
+        spacing = 3;
+
+    xSlow = 80;
+    xMid = xSlow + widthSlow + spacing;
+    xFast = xMid + widthMid + spacing;
+    xInstant = GetStringRightAlignXOffset(FONT_NORMAL, gText_TextSpeedInstant, 198);
+
+    DrawOptionMenuChoice(gText_TextSpeedSlow, xSlow, YPOS_TEXTSPEED, styles[0]);
     DrawOptionMenuChoice(gText_TextSpeedMid, xMid, YPOS_TEXTSPEED, styles[1]);
-
-    DrawOptionMenuChoice(gText_TextSpeedFast, GetStringRightAlignXOffset(FONT_NORMAL, gText_TextSpeedFast, 198), YPOS_TEXTSPEED, styles[2]);
+    DrawOptionMenuChoice(gText_TextSpeedFast, xFast, YPOS_TEXTSPEED, styles[2]);
+    DrawOptionMenuChoice(gText_TextSpeedInstant, xInstant, YPOS_TEXTSPEED, styles[3]);
 }
 
 static u8 BattleScene_ProcessInput(u8 selection)

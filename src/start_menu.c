@@ -27,7 +27,9 @@
 #include "overworld.h"
 #include "palette.h"
 #include "party_menu.h"
+#include "pokemon.h"
 #include "pokedex.h"
+#include "pokemon_storage_system.h"
 #include "pokenav.h"
 #include "safari_zone.h"
 #include "save.h"
@@ -52,6 +54,7 @@ enum
 {
     MENU_ACTION_POKEDEX,
     MENU_ACTION_POKEMON,
+    MENU_ACTION_PC,
     MENU_ACTION_BAG,
     MENU_ACTION_POKENAV,
     MENU_ACTION_PLAYER,
@@ -82,7 +85,7 @@ EWRAM_DATA static u8 sSafariBallsWindowId = 0;
 EWRAM_DATA static u8 sBattlePyramidFloorWindowId = 0;
 EWRAM_DATA static u8 sStartMenuCursorPos = 0;
 EWRAM_DATA static u8 sNumStartMenuActions = 0;
-EWRAM_DATA static u8 sCurrentStartMenuActions[9] = {0};
+EWRAM_DATA static u8 sCurrentStartMenuActions[10] = {0};
 EWRAM_DATA static s8 sInitStartMenuData[2] = {0};
 
 EWRAM_DATA static u8 (*sSaveDialogCallback)(void) = NULL;
@@ -93,6 +96,7 @@ EWRAM_DATA static u8 sSaveInfoWindowId = 0;
 // Menu action callbacks
 static bool8 StartMenuPokedexCallback(void);
 static bool8 StartMenuPokemonCallback(void);
+static bool8 StartMenuPCCallback(void);
 static bool8 StartMenuBagCallback(void);
 static bool8 StartMenuPokeNavCallback(void);
 static bool8 StartMenuPlayerNameCallback(void);
@@ -183,6 +187,7 @@ static const struct MenuAction sStartMenuItems[] =
 {
     [MENU_ACTION_POKEDEX]         = {gText_MenuPokedex, {.u8_void = StartMenuPokedexCallback}},
     [MENU_ACTION_POKEMON]         = {gText_MenuPokemon, {.u8_void = StartMenuPokemonCallback}},
+    [MENU_ACTION_PC]              = {gText_MenuPC,      {.u8_void = StartMenuPCCallback}},
     [MENU_ACTION_BAG]             = {gText_MenuBag,     {.u8_void = StartMenuBagCallback}},
     [MENU_ACTION_POKENAV]         = {gText_MenuPokenav, {.u8_void = StartMenuPokeNavCallback}},
     [MENU_ACTION_PLAYER]          = {gText_MenuPlayer,  {.u8_void = StartMenuPlayerNameCallback}},
@@ -321,6 +326,8 @@ static void BuildNormalStartMenu(void)
     if (FlagGet(FLAG_SYS_POKEMON_GET) == TRUE)
     {
         AddStartMenuAction(MENU_ACTION_POKEMON);
+        if (CalculatePlayerPartyCount() > 0)
+            AddStartMenuAction(MENU_ACTION_PC);
     }
 
     AddStartMenuAction(MENU_ACTION_BAG);
@@ -452,14 +459,16 @@ static bool32 PrintStartMenuActions(s8 *pIndex, u32 count)
 
     do
     {
+        u8 topOffset = (sNumStartMenuActions > 8) ? ((index << 4) + 1) : ((index << 4) + 9);
+
         if (sStartMenuItems[sCurrentStartMenuActions[index]].func.u8_void == StartMenuPlayerNameCallback)
         {
-            PrintPlayerNameOnWindow(GetStartMenuWindowId(), sStartMenuItems[sCurrentStartMenuActions[index]].text, 8, (index << 4) + 9);
+            PrintPlayerNameOnWindow(GetStartMenuWindowId(), sStartMenuItems[sCurrentStartMenuActions[index]].text, 8, topOffset);
         }
         else
         {
             StringExpandPlaceholders(gStringVar4, sStartMenuItems[sCurrentStartMenuActions[index]].text);
-            AddTextPrinterParameterized(GetStartMenuWindowId(), FONT_NORMAL, gStringVar4, 8, (index << 4) + 9, TEXT_SKIP_DRAW, NULL);
+            AddTextPrinterParameterized(GetStartMenuWindowId(), FONT_NORMAL, gStringVar4, 8, topOffset, TEXT_SKIP_DRAW, NULL);
         }
 
         index++;
@@ -508,7 +517,7 @@ static bool32 InitStartMenuStep(void)
             sInitStartMenuData[0]++;
         break;
     case 5:
-        sStartMenuCursorPos = InitMenuNormal(GetStartMenuWindowId(), FONT_NORMAL, 0, 9, 16, sNumStartMenuActions, sStartMenuCursorPos);
+        sStartMenuCursorPos = InitMenuNormal(GetStartMenuWindowId(), FONT_NORMAL, 0, (sNumStartMenuActions > 8) ? 1 : 9, 16, sNumStartMenuActions, sStartMenuCursorPos);
         CopyWindowToVram(GetStartMenuWindowId(), COPYWIN_MAP);
         return TRUE;
     }
@@ -613,6 +622,20 @@ static bool8 HandleStartMenuInput(void)
                 return FALSE;
         }
 
+        if (sStartMenuItems[sCurrentStartMenuActions[sStartMenuCursorPos]].func.u8_void == StartMenuPCCallback)
+        {
+            if (!FlagGet(FLAG_SYS_POKEMON_GET) || CalculatePlayerPartyCount() == 0)
+                return FALSE;
+
+            if (!Overworld_MapTypeAllowsTeleportAndFly(gMapHeader.mapType))
+            {
+                RemoveExtraStartMenuWindows();
+                HideStartMenu();
+                ScriptContext_SetupScript(EventScript_CantUsePortablePC);
+                return TRUE;
+            }
+        }
+
         gMenuCallback = sStartMenuItems[sCurrentStartMenuActions[sStartMenuCursorPos]].func.u8_void;
 
         if (gMenuCallback != StartMenuSaveCallback
@@ -660,6 +683,24 @@ static bool8 StartMenuPokemonCallback(void)
         RemoveExtraStartMenuWindows();
         CleanupOverworldWindowsAndTilemaps();
         SetMainCallback2(CB2_PartyMenuFromStartMenu); // Display party menu
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static bool8 StartMenuPCCallback(void)
+{
+    if (!FlagGet(FLAG_SYS_POKEMON_GET) || CalculatePlayerPartyCount() == 0)
+        return FALSE;
+
+    if (!gPaletteFade.active)
+    {
+        PlayRainStoppingSoundEffect();
+        RemoveExtraStartMenuWindows();
+        CleanupOverworldWindowsAndTilemaps();
+        EnterPokeStorageFromStartMenu();
 
         return TRUE;
     }

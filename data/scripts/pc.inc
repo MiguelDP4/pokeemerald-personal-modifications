@@ -60,3 +60,11 @@ EventScript_AccessHallOfFame::
 	special AccessHallOfFamePC
 	goto EventScript_AccessPC
 	end
+
+EventScript_CantUsePortablePC::
+	msgbox Text_NoSignalPortablePC, MSGBOX_SIGN
+	end
+
+Text_NoSignalPortablePC:
+	.string "There's no signal here, you need\n"
+	.string "to go outside to use the portable PC.$"
