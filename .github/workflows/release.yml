@@ -2,6 +2,8 @@ name: Build and Release ROM
 
 on:
   push:
+    branches:
+      - development
     tags:
       - 'v*'
   workflow_dispatch:
@@ -72,17 +74,25 @@ jobs:
             TAG="${{ inputs.tag_name }}"
             TITLE="${{ inputs.release_title }}"
             NOTES="${{ inputs.release_notes }}"
+            PRERELEASE="false"
             if [ -z "$TITLE" ]; then
               TITLE="Release $TAG"
             fi
-          else
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
             TAG="${GITHUB_REF#refs/tags/}"
             TITLE="Release $TAG"
             NOTES="Compilación automática para el tag $TAG."
+            PRERELEASE="false"
+          else
+            TAG="dev-latest"
+            TITLE="Development Build (Latest)"
+            NOTES="Compilación continua automatizada de la rama development (${GITHUB_SHA::7})."
+            PRERELEASE="true"
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "notes=$NOTES" >> $GITHUB_OUTPUT
+          echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -97,7 +107,7 @@ jobs:
           name: ${{ steps.vars.outputs.title }}
           body: ${{ steps.vars.outputs.notes }}
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.vars.outputs.prerelease == 'true' }}
           files: pokeemerald.gba
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
