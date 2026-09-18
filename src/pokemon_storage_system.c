@@ -1658,6 +1658,9 @@ void ShowPokemonStorageSystemPC(void)
 
 void EnterPokeStorageFromStartMenu(void)
 {
+    if (!FlagGet(FLAG_SYS_POKEMON_GET) || CalculatePlayerPartyCount() == 0)
+        return;
+
     sOpenedFromStartMenu = TRUE;
     EnterPokeStorage(OPTION_MOVE_MONS);
 }

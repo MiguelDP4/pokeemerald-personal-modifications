@@ -27,6 +27,7 @@
 #include "overworld.h"
 #include "palette.h"
 #include "party_menu.h"
+#include "pokemon.h"
 #include "pokedex.h"
 #include "pokemon_storage_system.h"
 #include "pokenav.h"
@@ -325,7 +326,8 @@ static void BuildNormalStartMenu(void)
     if (FlagGet(FLAG_SYS_POKEMON_GET) == TRUE)
     {
         AddStartMenuAction(MENU_ACTION_POKEMON);
-        AddStartMenuAction(MENU_ACTION_PC);
+        if (CalculatePlayerPartyCount() > 0)
+            AddStartMenuAction(MENU_ACTION_PC);
     }
 
     AddStartMenuAction(MENU_ACTION_BAG);
@@ -622,6 +624,9 @@ static bool8 HandleStartMenuInput(void)
 
         if (sStartMenuItems[sCurrentStartMenuActions[sStartMenuCursorPos]].func.u8_void == StartMenuPCCallback)
         {
+            if (!FlagGet(FLAG_SYS_POKEMON_GET) || CalculatePlayerPartyCount() == 0)
+                return FALSE;
+
             if (!Overworld_MapTypeAllowsTeleportAndFly(gMapHeader.mapType))
             {
                 RemoveExtraStartMenuWindows();
@@ -687,6 +692,9 @@ static bool8 StartMenuPokemonCallback(void)
 
 static bool8 StartMenuPCCallback(void)
 {
+    if (!FlagGet(FLAG_SYS_POKEMON_GET) || CalculatePlayerPartyCount() == 0)
+        return FALSE;
+
     if (!gPaletteFade.active)
     {
         PlayRainStoppingSoundEffect();
