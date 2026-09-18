@@ -35,6 +35,7 @@
 #include "constants/songs.h"
 #include "constants/trainers.h"
 #include "constants/rgb.h"
+#include "player_custom_color.h"
 
 static void PlayerHandleGetMonData(void);
 static void PlayerHandleSetMonData(void);
@@ -2946,6 +2947,7 @@ static void PlayerHandleIntroTrainerBallThrow(void)
 
     paletteNum = AllocSpritePalette(0xD6F8);
     LoadCompressedPalette(gTrainerBackPicPaletteTable[gSaveBlock2Ptr->playerGender].data, OBJ_PLTT_ID(paletteNum), PLTT_SIZE_4BPP);
+    ApplyPlayerCustomColorsToObjSlot(paletteNum);
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = paletteNum;
 
     taskId = CreateTask(Task_StartSendOutAnim, 5);

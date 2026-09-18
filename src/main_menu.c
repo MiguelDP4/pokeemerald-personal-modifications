@@ -37,6 +37,7 @@
 #include "title_screen.h"
 #include "window.h"
 #include "mystery_gift_menu.h"
+#include "player_custom_color.h"
 
 /*
  * Main menu state machine
@@ -217,6 +218,12 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8);
 static void NewGameBirchSpeech_ShowGenderMenu(void);
 static s8 NewGameBirchSpeech_ProcessGenderMenuInput(void);
 static void NewGameBirchSpeech_ClearGenderWindow(u8, u8);
+static void Task_NewGameBirchSpeech_StartOutfitColorChoice(u8);
+static void Task_NewGameBirchSpeech_HandleOutfitColorInput(u8);
+static void NewGameBirchSpeech_UpdateLiveSpritePalette(u8);
+static void NewGameBirchSpeech_DrawOutfitColorRow(u8, u8);
+static void NewGameBirchSpeech_DrawOutfitColorWindow(u8);
+static void NewGameBirchSpeech_SetOutfitHelpText(u8);
 static void Task_NewGameBirchSpeech_WhatsYourName(u8);
 static void Task_NewGameBirchSpeech_SlideOutOldGenderSprite(u8);
 static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8);
@@ -393,12 +400,12 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
     },
     {
         .bg = 0,
-        .tilemapLeft = 3,
+        .tilemapLeft = 2,
         .tilemapTop = 2,
-        .width = 9,
-        .height = 10,
+        .width = 14,
+        .height = 9,
         .paletteNum = 15,
-        .baseBlock = 0x85
+        .baseBlock = 0x6D
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -1509,13 +1516,13 @@ static void Task_NewGameBirchSpeech_ChooseGender(u8 taskId)
             PlaySE(SE_SELECT);
             gSaveBlock2Ptr->playerGender = gender;
             NewGameBirchSpeech_ClearGenderWindow(1, 1);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+            gTasks[taskId].func = Task_NewGameBirchSpeech_StartOutfitColorChoice;
             break;
         case FEMALE:
             PlaySE(SE_SELECT);
             gSaveBlock2Ptr->playerGender = gender;
             NewGameBirchSpeech_ClearGenderWindow(1, 1);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+            gTasks[taskId].func = Task_NewGameBirchSpeech_StartOutfitColorChoice;
             break;
     }
     gender2 = Menu_GetCursorPos();
@@ -1568,6 +1575,332 @@ static void Task_NewGameBirchSpeech_SlideInNewGenderSprite(u8 taskId)
             gSprites[spriteId].oam.objMode = ST_OAM_OBJ_NORMAL;
             gTasks[taskId].func = Task_NewGameBirchSpeech_ChooseGender;
         }
+    }
+}
+
+#define tColorCursor data[12]
+#define tOutfitR     data[13]
+#define tOutfitG     data[14]
+#define tOutfitB     data[15]
+
+static const u8 sText_OutfitColorTitle[]   = _("OUTFIT COLOR");
+static const u8 sText_HelpOutfitSelect[]   = _("UP/DOWN: Select   LEFT/RIGHT: Adjust\nL/R: Fast         START: Confirm");
+static const u8 sText_HelpOutfitConfirm[]  = _("Press A or START to confirm outfit color.");
+
+static const u8 sText_RedCursor[]     = _("> RED   ");
+static const u8 sText_RedNormal[]     = _("  RED   ");
+static const u8 sText_GreenCursor[]   = _("> GREEN ");
+static const u8 sText_GreenNormal[]   = _("  GREEN ");
+static const u8 sText_BlueCursor[]    = _("> BLUE  ");
+static const u8 sText_BlueNormal[]    = _("  BLUE  ");
+static const u8 sText_ConfirmCursor[] = _("> ( CONFIRM )");
+static const u8 sText_ConfirmNormal[] = _("  ( CONFIRM )");
+
+static void NewGameBirchSpeech_UpdateLiveSpritePalette(u8 taskId)
+{
+    u8 spriteId = gTasks[taskId].tPlayerSpriteId;
+    u8 palSlot = gSprites[spriteId].oam.paletteNum;
+    u16 offset = OBJ_PLTT_ID(palSlot);
+    u8 r = gTasks[taskId].tOutfitR;
+    u8 g = gTasks[taskId].tOutfitG;
+    u8 b = gTasks[taskId].tOutfitB;
+    u8 sr = (r * 70) / 100;
+    u8 sg = (g * 70) / 100;
+    u8 sb = (b * 70) / 100;
+    u16 highlight = RGB(r >> 3, g >> 3, b >> 3);
+    u16 shadow = RGB(sr >> 3, sg >> 3, sb >> 3);
+
+    gPlttBufferUnfaded[offset + PLAYER_PAL_HIGHLIGHT_INDEX] = highlight;
+    gPlttBufferUnfaded[offset + PLAYER_PAL_SHADOW_INDEX] = shadow;
+    gPlttBufferFaded[offset + PLAYER_PAL_HIGHLIGHT_INDEX] = highlight;
+    gPlttBufferFaded[offset + PLAYER_PAL_SHADOW_INDEX] = shadow;
+}
+
+static void NewGameBirchSpeech_SetOutfitHelpText(u8 cursor)
+{
+    NewGameBirchSpeech_ClearWindow(0);
+    if (cursor == 3)
+        StringExpandPlaceholders(gStringVar4, sText_HelpOutfitConfirm);
+    else
+        StringExpandPlaceholders(gStringVar4, sText_HelpOutfitSelect);
+    AddTextPrinterForMessage(TRUE);
+}
+
+static void NewGameBirchSpeech_DrawOutfitColorRow(u8 taskId, u8 row)
+{
+    u8 cursor;
+    u8 str[32];
+    u8 numStr[8];
+    u8 y;
+    u8 val;
+    u8 barWidth;
+
+    cursor = gTasks[taskId].tColorCursor;
+
+    if (row == 0)
+    {
+        y = 17;
+        FillWindowPixelRect(2, PIXEL_FILL(1), 0, y - 1, 112, 13);
+        val = gTasks[taskId].tOutfitR;
+        StringCopy(str, (cursor == 0) ? sText_RedCursor : sText_RedNormal);
+        ConvertIntToDecimalStringN(numStr, val, STR_CONV_MODE_RIGHT_ALIGN, 3);
+        StringAppend(str, numStr);
+        AddTextPrinterParameterized(2, FONT_NORMAL, str, 2, y, 0, NULL);
+
+        FillWindowPixelRect(2, PIXEL_FILL(2), 60, y + 3, 46, 6);
+        FillWindowPixelRect(2, PIXEL_FILL(1), 61, y + 4, 44, 4);
+        barWidth = (val * 44) / 255;
+        if (barWidth > 0)
+            FillWindowPixelRect(2, PIXEL_FILL(2), 61, y + 4, barWidth, 4);
+    }
+    else if (row == 1)
+    {
+        y = 30;
+        FillWindowPixelRect(2, PIXEL_FILL(1), 0, y - 1, 112, 13);
+        val = gTasks[taskId].tOutfitG;
+        StringCopy(str, (cursor == 1) ? sText_GreenCursor : sText_GreenNormal);
+        ConvertIntToDecimalStringN(numStr, val, STR_CONV_MODE_RIGHT_ALIGN, 3);
+        StringAppend(str, numStr);
+        AddTextPrinterParameterized(2, FONT_NORMAL, str, 2, y, 0, NULL);
+
+        FillWindowPixelRect(2, PIXEL_FILL(2), 60, y + 3, 46, 6);
+        FillWindowPixelRect(2, PIXEL_FILL(1), 61, y + 4, 44, 4);
+        barWidth = (val * 44) / 255;
+        if (barWidth > 0)
+            FillWindowPixelRect(2, PIXEL_FILL(2), 61, y + 4, barWidth, 4);
+    }
+    else if (row == 2)
+    {
+        y = 43;
+        FillWindowPixelRect(2, PIXEL_FILL(1), 0, y - 1, 112, 13);
+        val = gTasks[taskId].tOutfitB;
+        StringCopy(str, (cursor == 2) ? sText_BlueCursor : sText_BlueNormal);
+        ConvertIntToDecimalStringN(numStr, val, STR_CONV_MODE_RIGHT_ALIGN, 3);
+        StringAppend(str, numStr);
+        AddTextPrinterParameterized(2, FONT_NORMAL, str, 2, y, 0, NULL);
+
+        FillWindowPixelRect(2, PIXEL_FILL(2), 60, y + 3, 46, 6);
+        FillWindowPixelRect(2, PIXEL_FILL(1), 61, y + 4, 44, 4);
+        barWidth = (val * 44) / 255;
+        if (barWidth > 0)
+            FillWindowPixelRect(2, PIXEL_FILL(2), 61, y + 4, barWidth, 4);
+    }
+    else
+    {
+        y = 56;
+        FillWindowPixelRect(2, PIXEL_FILL(1), 0, y - 1, 112, 14);
+        StringCopy(str, (cursor == 3) ? sText_ConfirmCursor : sText_ConfirmNormal);
+        AddTextPrinterParameterized(2, FONT_NORMAL, str, 16, y, 0, NULL);
+    }
+
+    CopyWindowToVram(2, COPYWIN_GFX);
+}
+
+static void NewGameBirchSpeech_DrawOutfitColorWindow(u8 taskId)
+{
+    u8 i;
+
+    FillWindowPixelBuffer(2, PIXEL_FILL(1));
+
+    // Title: "OUTFIT COLOR"
+    AddTextPrinterParameterized(2, FONT_NORMAL, sText_OutfitColorTitle, 18, 2, 0, NULL);
+
+    for (i = 0; i < 4; i++)
+        NewGameBirchSpeech_DrawOutfitColorRow(taskId, i);
+
+    PutWindowTilemap(2);
+    CopyWindowToVram(2, COPYWIN_FULL);
+}
+
+static void Task_NewGameBirchSpeech_StartOutfitColorChoice(u8 taskId)
+{
+    u8 defR, defG, defB;
+    GetDefaultOutfitColors(gSaveBlock2Ptr->playerGender, &defR, &defG, &defB);
+
+    gTasks[taskId].tColorCursor = 0;
+    gTasks[taskId].tOutfitR = defR;
+    gTasks[taskId].tOutfitG = defG;
+    gTasks[taskId].tOutfitB = defB;
+    gTasks[taskId].tTimer = 0;
+
+    LoadMainMenuWindowFrameTiles(0, 0xF3);
+    DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[2], 0xF3);
+    NewGameBirchSpeech_UpdateLiveSpritePalette(taskId);
+    NewGameBirchSpeech_DrawOutfitColorWindow(taskId);
+    NewGameBirchSpeech_SetOutfitHelpText(0);
+
+    gTasks[taskId].func = Task_NewGameBirchSpeech_HandleOutfitColorInput;
+}
+
+static void Task_NewGameBirchSpeech_HandleOutfitColorInput(u8 taskId)
+{
+    u8 cursor;
+    u8 r;
+    u8 g;
+    u8 b;
+    s16 delta;
+
+    cursor = gTasks[taskId].tColorCursor;
+    r = gTasks[taskId].tOutfitR;
+    g = gTasks[taskId].tOutfitG;
+    b = gTasks[taskId].tOutfitB;
+    delta = 0;
+
+    if (JOY_NEW(DPAD_DOWN))
+    {
+        u8 oldCursor = cursor;
+        cursor = (cursor + 1) % 4;
+        gTasks[taskId].tColorCursor = cursor;
+        PlaySE(SE_SELECT);
+        NewGameBirchSpeech_DrawOutfitColorRow(taskId, oldCursor);
+        NewGameBirchSpeech_DrawOutfitColorRow(taskId, cursor);
+        if ((oldCursor == 3) != (cursor == 3))
+            NewGameBirchSpeech_SetOutfitHelpText(cursor);
+        return;
+    }
+    if (JOY_NEW(DPAD_UP))
+    {
+        u8 oldCursor = cursor;
+        cursor = (cursor + 3) % 4;
+        gTasks[taskId].tColorCursor = cursor;
+        PlaySE(SE_SELECT);
+        NewGameBirchSpeech_DrawOutfitColorRow(taskId, oldCursor);
+        NewGameBirchSpeech_DrawOutfitColorRow(taskId, cursor);
+        if ((oldCursor == 3) != (cursor == 3))
+            NewGameBirchSpeech_SetOutfitHelpText(cursor);
+        return;
+    }
+
+    if (cursor < 3)
+    {
+        if (JOY_NEW(DPAD_LEFT))
+        {
+            delta = -5;
+            gTasks[taskId].tTimer = 16;
+        }
+        else if (JOY_NEW(DPAD_RIGHT))
+        {
+            delta = +5;
+            gTasks[taskId].tTimer = 16;
+        }
+        else if (JOY_HELD(DPAD_LEFT))
+        {
+            if (gTasks[taskId].tTimer > 0)
+                gTasks[taskId].tTimer--;
+            else
+            {
+                delta = -5;
+                gTasks[taskId].tTimer = 3;
+            }
+        }
+        else if (JOY_HELD(DPAD_RIGHT))
+        {
+            if (gTasks[taskId].tTimer > 0)
+                gTasks[taskId].tTimer--;
+            else
+            {
+                delta = +5;
+                gTasks[taskId].tTimer = 3;
+            }
+        }
+        else if (JOY_NEW(L_BUTTON))
+        {
+            delta = -25;
+        }
+        else if (JOY_NEW(R_BUTTON))
+        {
+            delta = +25;
+        }
+
+        if (delta != 0)
+        {
+            int val;
+            if (cursor == 0)
+            {
+                val = (int)r + delta;
+                if (val < 0) val = 0;
+                if (val > 255) val = 255;
+                gTasks[taskId].tOutfitR = (u8)val;
+            }
+            else if (cursor == 1)
+            {
+                val = (int)g + delta;
+                if (val < 0) val = 0;
+                if (val > 255) val = 255;
+                gTasks[taskId].tOutfitG = (u8)val;
+            }
+            else
+            {
+                val = (int)b + delta;
+                if (val < 0) val = 0;
+                if (val > 255) val = 255;
+                gTasks[taskId].tOutfitB = (u8)val;
+            }
+            NewGameBirchSpeech_UpdateLiveSpritePalette(taskId);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, cursor);
+            return;
+        }
+    }
+
+    if (JOY_NEW(A_BUTTON))
+    {
+        if (cursor == 3) // CONFIRM
+        {
+            PlaySE(SE_SELECT);
+            SetPlayerOutfitColors(r, g, b);
+            NewGameBirchSpeech_ClearGenderWindow(2, TRUE);
+            gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+            return;
+        }
+        else
+        {
+            u8 oldCursor = cursor;
+            cursor++;
+            gTasks[taskId].tColorCursor = cursor;
+            PlaySE(SE_SELECT);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, oldCursor);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, cursor);
+            if (cursor == 3)
+                NewGameBirchSpeech_SetOutfitHelpText(cursor);
+            return;
+        }
+    }
+
+    if (JOY_NEW(START_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        SetPlayerOutfitColors(r, g, b);
+        NewGameBirchSpeech_ClearGenderWindow(2, TRUE);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+        return;
+    }
+
+    if (JOY_NEW(B_BUTTON))
+    {
+        if (cursor != 3)
+        {
+            u8 oldCursor = cursor;
+            cursor = 3;
+            gTasks[taskId].tColorCursor = cursor;
+            PlaySE(SE_SELECT);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, oldCursor);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, cursor);
+            NewGameBirchSpeech_SetOutfitHelpText(cursor);
+        }
+        else
+        {
+            u8 defR, defG, defB;
+            GetDefaultOutfitColors(gSaveBlock2Ptr->playerGender, &defR, &defG, &defB);
+            gTasks[taskId].tOutfitR = defR;
+            gTasks[taskId].tOutfitG = defG;
+            gTasks[taskId].tOutfitB = defB;
+            PlaySE(SE_SELECT);
+            NewGameBirchSpeech_UpdateLiveSpritePalette(taskId);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, 0);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, 1);
+            NewGameBirchSpeech_DrawOutfitColorRow(taskId, 2);
+        }
+        return;
     }
 }
 
@@ -1721,6 +2054,7 @@ static void Task_NewGameBirchSpeech_AreYouReady(u8 taskId)
         gSprites[spriteId].invisible = FALSE;
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_BLEND;
         gTasks[taskId].tPlayerSpriteId = spriteId;
+        ApplyPlayerCustomColorsToObjSlot(gSprites[spriteId].oam.paletteNum);
         NewGameBirchSpeech_StartFadeInTarget1OutTarget2(taskId, 2);
         NewGameBirchSpeech_StartFadePlatformOut(taskId, 1);
         StringExpandPlaceholders(gStringVar4, gText_Birch_AreYouReady);
@@ -1836,6 +2170,7 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     gSprites[spriteId].y = 60;
     gSprites[spriteId].invisible = FALSE;
     gTasks[taskId].tPlayerSpriteId = spriteId;
+    ApplyPlayerCustomColorsToObjSlot(gSprites[spriteId].oam.paletteNum);
     SetGpuReg(REG_OFFSET_BG1HOFS, -60);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
     SetGpuReg(REG_OFFSET_WIN0H, 0);

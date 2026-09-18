@@ -22,6 +22,7 @@
 #include "trainer_see.h"
 #include "trainer_hill.h"
 #include "util.h"
+#include "player_custom_color.h"
 #include "constants/event_object_movement.h"
 #include "constants/event_objects.h"
 #include "constants/field_effects.h"
@@ -2034,10 +2035,24 @@ static void UNUSED LoadObjectEventPaletteSet(u16 *paletteTags)
 
 static u8 LoadSpritePaletteIfTagExists(const struct SpritePalette *spritePalette)
 {
+    u8 slot;
+
     if (IndexOfSpritePaletteTag(spritePalette->tag) != 0xFF)
         return 0xFF;
 
-    return LoadSpritePalette(spritePalette);
+    slot = LoadSpritePalette(spritePalette);
+    if (slot != 0xFF)
+    {
+        if (spritePalette->tag == OBJ_EVENT_PAL_TAG_BRENDAN || spritePalette->tag == OBJ_EVENT_PAL_TAG_MAY)
+        {
+            ApplyPlayerCustomColorsToObjSlot(slot);
+        }
+        else if (spritePalette->tag == OBJ_EVENT_PAL_TAG_BRENDAN_REFLECTION || spritePalette->tag == OBJ_EVENT_PAL_TAG_MAY_REFLECTION)
+        {
+            ApplyPlayerCustomColorsToReflectionSlot(slot);
+        }
+    }
+    return slot;
 }
 
 void PatchObjectPalette(u16 paletteTag, u8 paletteSlot)
@@ -2046,6 +2061,15 @@ void PatchObjectPalette(u16 paletteTag, u8 paletteSlot)
     u8 paletteIndex = FindObjectEventPaletteIndexByTag(paletteTag);
 
     LoadPalette(sObjectEventSpritePalettes[paletteIndex].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+
+    if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_MAY)
+    {
+        ApplyPlayerCustomColorsToObjSlot(paletteSlot);
+    }
+    else if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN_REFLECTION || paletteTag == OBJ_EVENT_PAL_TAG_MAY_REFLECTION)
+    {
+        ApplyPlayerCustomColorsToReflectionSlot(paletteSlot);
+    }
 }
 
 void PatchObjectPaletteRange(const u16 *paletteTags, u8 minSlot, u8 maxSlot)

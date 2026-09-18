@@ -29,6 +29,7 @@
 #include "main.h"
 #include "constants/event_objects.h"
 #include "constants/rgb.h"
+#include "player_custom_color.h"
 
 enum {
     INPUT_NONE,
@@ -1402,6 +1403,7 @@ static void NamingScreen_CreatePlayerIcon(void)
     spriteId = CreateObjectGraphicsSprite(rivalGfxId, SpriteCallbackDummy, 56, 37, 0);
     gSprites[spriteId].oam.priority = 3;
     StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
+    ApplyPlayerCustomColorsToObjSlot(gSprites[spriteId].oam.paletteNum);
 }
 
 static void NamingScreen_CreatePCIcon(void)

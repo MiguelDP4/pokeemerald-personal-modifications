@@ -68,6 +68,22 @@ El objetivo de este proyecto es conservar la dificultad, espíritu e historia de
 
 ---
 
+### 7. Personalización de Color del Protagonista
+| Característica | Pokémon Esmeralda Original | Este Proyecto |
+| :--- | :--- | :--- |
+| **Personalización de Ropa / Accesorios** | Paleta fija única para Brendan (verde/rojo) y May (rojo/blanco). | Al iniciar una partida nueva (tras elegir género), se abre un **selector interactivo de color RGB** (0-255) para personalizar los colores de acento (bandana, mochila y detalles). |
+| **Generación Dinámica de Sombras** | Paleta precompilada fija en ROM. | Las sombras del atuendo se calculan automáticamente al 70% de luminosidad del color seleccionado, garantizando contraste y volumen estético sin saturaciones extrañas. |
+| **Persistencia Universal** | N/A | El color seleccionado se almacena en el bloque de guardado (`SaveBlock2`) y se aplica dinámicamente en **todas las instancias del juego**: Overworld (a pie, corriendo, bici, surf, reflejos en agua), Batalla (back sprites y lanzamiento de Pokéball), Pantalla de Nombres, Presentación del Prof. Birch, Tarjeta de Entrenador y Hall of Fame. |
+
+**Controles del Selector de Color:**
+- **D-Pad Arriba / Abajo:** Navegar entre canales de color (**R**, **G**, **B**) y la opción **CONFIRM**.
+- **D-Pad Izquierda / Derecha:** Disminuir / Aumentar valor en pasos de 5 (mantener presionado para deslizamiento continuo).
+- **Botones L / R:** Saltos rápidos de -25 / +25 para ajustes ágiles.
+- **Botón A / START:** Confirmar selección y continuar con el nombre del personaje.
+- **Botón B:** Atajo a CONFIRM o restaurar paleta por defecto si ya estás sobre CONFIRM.
+
+---
+
 ## Compilación y Ejecución
 
 Para compilar la ROM desde el código fuente:

@@ -8,6 +8,7 @@
 #include "data.h"
 #include "pokemon.h"
 #include "constants/trainers.h"
+#include "player_custom_color.h"
 
 #define PICS_COUNT 8
 
@@ -126,11 +127,19 @@ static void LoadPicPaletteByTagOrSlot(u16 species, u32 otId, u32 personality, u8
         {
             sCreatingSpriteTemplate.paletteTag = TAG_NONE;
             LoadCompressedPalette(gTrainerFrontPicPaletteTable[species].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+            if (species == TRAINER_PIC_BRENDAN || species == TRAINER_PIC_MAY)
+                ApplyPlayerCustomColorsToObjSlot(paletteSlot);
         }
         else
         {
             sCreatingSpriteTemplate.paletteTag = paletteTag;
             LoadCompressedSpritePalette(&gTrainerFrontPicPaletteTable[species]);
+            if (species == TRAINER_PIC_BRENDAN || species == TRAINER_PIC_MAY)
+            {
+                u8 slot = IndexOfSpritePaletteTag(paletteTag);
+                if (slot != 0xFF)
+                    ApplyPlayerCustomColorsToObjSlot(slot);
+            }
         }
     }
 }
@@ -138,9 +147,21 @@ static void LoadPicPaletteByTagOrSlot(u16 species, u32 otId, u32 personality, u8
 static void LoadPicPaletteBySlot(u16 species, u32 otId, u32 personality, u8 paletteSlot, bool8 isTrainer)
 {
     if (!isTrainer)
+    {
         LoadCompressedPalette(GetMonSpritePalFromSpeciesAndPersonality(species, otId, personality), PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+    }
     else
+    {
         LoadCompressedPalette(gTrainerFrontPicPaletteTable[species].data, PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+        if (species == TRAINER_PIC_BRENDAN || species == TRAINER_PIC_MAY)
+        {
+            u16 offset = PLTT_ID(paletteSlot);
+            gPlttBufferUnfaded[offset + PLAYER_PAL_HIGHLIGHT_INDEX] = GetPlayerHighlightColor();
+            gPlttBufferUnfaded[offset + PLAYER_PAL_SHADOW_INDEX] = GetPlayerShadowColor();
+            gPlttBufferFaded[offset + PLAYER_PAL_HIGHLIGHT_INDEX] = GetPlayerHighlightColor();
+            gPlttBufferFaded[offset + PLAYER_PAL_SHADOW_INDEX] = GetPlayerShadowColor();
+        }
+    }
 }
 
 static void AssignSpriteAnimsTable(bool8 isTrainer)

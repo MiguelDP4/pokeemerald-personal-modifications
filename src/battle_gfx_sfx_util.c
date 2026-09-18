@@ -25,6 +25,8 @@
 #include "constants/songs.h"
 #include "constants/rgb.h"
 #include "constants/battle_palace.h"
+#include "constants/trainers.h"
+#include "player_custom_color.h"
 
 extern const u8 gBattlePalaceNatureToMoveTarget[];
 extern const u8 *const gBattleAnims_General[];
@@ -723,6 +725,8 @@ void DecompressTrainerBackPic(u16 backPicId, u8 battler)
 #endif
     LoadCompressedPalette(gTrainerBackPicPaletteTable[backPicId].data,
                           OBJ_PLTT_ID(battler), PLTT_SIZE_4BPP);
+    if (backPicId == TRAINER_BACK_PIC_BRENDAN || backPicId == TRAINER_BACK_PIC_MAY)
+        ApplyPlayerCustomColorsToObjSlot(battler);
 }
 
 void BattleGfxSfxDummy3(u8 gender)

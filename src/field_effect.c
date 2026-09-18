@@ -31,6 +31,8 @@
 #include "constants/metatile_behaviors.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "constants/trainers.h"
+#include "player_custom_color.h"
 
 #define subsprite_table(ptr) {.subsprites = ptr, .subspriteCount = (sizeof ptr) / (sizeof(struct Subsprite))}
 
@@ -888,6 +890,8 @@ bool8 FieldEffectActiveListContains(u8 id)
 u8 CreateTrainerSprite(u8 trainerSpriteID, s16 x, s16 y, u8 subpriority, u8 *buffer)
 {
     struct SpriteTemplate spriteTemplate;
+    u8 spriteId;
+
     LoadCompressedSpritePaletteOverrideBuffer(&gTrainerFrontPicPaletteTable[trainerSpriteID], buffer);
     LoadCompressedSpriteSheetOverrideBuffer(&gTrainerFrontPicTable[trainerSpriteID], buffer);
     spriteTemplate.tileTag = gTrainerFrontPicTable[trainerSpriteID].tag;
@@ -897,7 +901,16 @@ u8 CreateTrainerSprite(u8 trainerSpriteID, s16 x, s16 y, u8 subpriority, u8 *buf
     spriteTemplate.images = NULL;
     spriteTemplate.affineAnims = gDummySpriteAffineAnimTable;
     spriteTemplate.callback = SpriteCallbackDummy;
-    return CreateSprite(&spriteTemplate, x, y, subpriority);
+    spriteId = CreateSprite(&spriteTemplate, x, y, subpriority);
+
+    if (trainerSpriteID == TRAINER_PIC_BRENDAN || trainerSpriteID == TRAINER_PIC_MAY)
+    {
+        u8 paletteNum = IndexOfSpritePaletteTag(spriteTemplate.paletteTag);
+        if (paletteNum != 0xFF)
+            ApplyPlayerCustomColorsToObjSlot(paletteNum);
+    }
+
+    return spriteId;
 }
 
 static void UNUSED LoadTrainerGfx_TrainerCard(u8 gender, u16 palOffset, u8 *dest)
