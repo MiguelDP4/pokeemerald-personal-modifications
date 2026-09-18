@@ -656,56 +656,57 @@
 #define FLAG_HIDDEN_ITEM_ROUTE_123_RARE_CANDY                (FLAG_HIDDEN_ITEMS_START + 0x6E)
 #define FLAG_HIDDEN_ITEM_ROUTE_105_BIG_PEARL                 (FLAG_HIDDEN_ITEMS_START + 0x6F)
 
-#define FLAG_UNUSED_0x264  0x264 // Unused Flag
-#define FLAG_UNUSED_0x265  0x265 // Unused Flag
-#define FLAG_UNUSED_0x266  0x266 // Unused Flag
-#define FLAG_UNUSED_0x267  0x267 // Unused Flag
-#define FLAG_UNUSED_0x268  0x268 // Unused Flag
-#define FLAG_UNUSED_0x269  0x269 // Unused Flag
-#define FLAG_UNUSED_0x26A  0x26A // Unused Flag
-#define FLAG_UNUSED_0x26B  0x26B // Unused Flag
-#define FLAG_UNUSED_0x26C  0x26C // Unused Flag
-#define FLAG_UNUSED_0x26D  0x26D // Unused Flag
-#define FLAG_UNUSED_0x26E  0x26E // Unused Flag
-#define FLAG_UNUSED_0x26F  0x26F // Unused Flag
-#define FLAG_UNUSED_0x270  0x270 // Unused Flag
-#define FLAG_UNUSED_0x271  0x271 // Unused Flag
-#define FLAG_UNUSED_0x272  0x272 // Unused Flag
-#define FLAG_UNUSED_0x273  0x273 // Unused Flag
-#define FLAG_UNUSED_0x274  0x274 // Unused Flag
-#define FLAG_UNUSED_0x275  0x275 // Unused Flag
-#define FLAG_UNUSED_0x276  0x276 // Unused Flag
-#define FLAG_UNUSED_0x277  0x277 // Unused Flag
-#define FLAG_UNUSED_0x278  0x278 // Unused Flag
-#define FLAG_UNUSED_0x279  0x279 // Unused Flag
-#define FLAG_UNUSED_0x27A  0x27A // Unused Flag
-#define FLAG_UNUSED_0x27B  0x27B // Unused Flag
-#define FLAG_UNUSED_0x27C  0x27C // Unused Flag
-#define FLAG_UNUSED_0x27D  0x27D // Unused Flag
-#define FLAG_UNUSED_0x27E  0x27E // Unused Flag
-#define FLAG_UNUSED_0x27F  0x27F // Unused Flag
-#define FLAG_UNUSED_0x280  0x280 // Unused Flag
-#define FLAG_UNUSED_0x281  0x281 // Unused Flag
-#define FLAG_UNUSED_0x282  0x282 // Unused Flag
-#define FLAG_UNUSED_0x283  0x283 // Unused Flag
-#define FLAG_UNUSED_0x284  0x284 // Unused Flag
-#define FLAG_UNUSED_0x285  0x285 // Unused Flag
-#define FLAG_UNUSED_0x286  0x286 // Unused Flag
-#define FLAG_UNUSED_0x287  0x287 // Unused Flag
-#define FLAG_UNUSED_0x288  0x288 // Unused Flag
-#define FLAG_UNUSED_0x289  0x289 // Unused Flag
-#define FLAG_UNUSED_0x28A  0x28A // Unused Flag
-#define FLAG_UNUSED_0x28B  0x28B // Unused Flag
-#define FLAG_UNUSED_0x28C  0x28C // Unused Flag
-#define FLAG_UNUSED_0x28D  0x28D // Unused Flag
-#define FLAG_UNUSED_0x28E  0x28E // Unused Flag
-#define FLAG_UNUSED_0x28F  0x28F // Unused Flag
-#define FLAG_UNUSED_0x290  0x290 // Unused Flag
-#define FLAG_UNUSED_0x291  0x291 // Unused Flag
-#define FLAG_UNUSED_0x292  0x292 // Unused Flag
-#define FLAG_UNUSED_0x293  0x293 // Unused Flag
-#define FLAG_UNUSED_0x294  0x294 // Unused Flag
-#define FLAG_UNUSED_0x295  0x295 // Unused Flag
+#define FLAG_FOUND_TM_START                  0x264
+#define FLAG_FOUND_TM01                      (FLAG_FOUND_TM_START + 0)
+#define FLAG_FOUND_TM02                      (FLAG_FOUND_TM_START + 1)
+#define FLAG_FOUND_TM03                      (FLAG_FOUND_TM_START + 2)
+#define FLAG_FOUND_TM04                      (FLAG_FOUND_TM_START + 3)
+#define FLAG_FOUND_TM05                      (FLAG_FOUND_TM_START + 4)
+#define FLAG_FOUND_TM06                      (FLAG_FOUND_TM_START + 5)
+#define FLAG_FOUND_TM07                      (FLAG_FOUND_TM_START + 6)
+#define FLAG_FOUND_TM08                      (FLAG_FOUND_TM_START + 7)
+#define FLAG_FOUND_TM09                      (FLAG_FOUND_TM_START + 8)
+#define FLAG_FOUND_TM10                      (FLAG_FOUND_TM_START + 9)
+#define FLAG_FOUND_TM11                      (FLAG_FOUND_TM_START + 10)
+#define FLAG_FOUND_TM12                      (FLAG_FOUND_TM_START + 11)
+#define FLAG_FOUND_TM13                      (FLAG_FOUND_TM_START + 12)
+#define FLAG_FOUND_TM14                      (FLAG_FOUND_TM_START + 13)
+#define FLAG_FOUND_TM15                      (FLAG_FOUND_TM_START + 14)
+#define FLAG_FOUND_TM16                      (FLAG_FOUND_TM_START + 15)
+#define FLAG_FOUND_TM17                      (FLAG_FOUND_TM_START + 16)
+#define FLAG_FOUND_TM18                      (FLAG_FOUND_TM_START + 17)
+#define FLAG_FOUND_TM19                      (FLAG_FOUND_TM_START + 18)
+#define FLAG_FOUND_TM20                      (FLAG_FOUND_TM_START + 19)
+#define FLAG_FOUND_TM21                      (FLAG_FOUND_TM_START + 20)
+#define FLAG_FOUND_TM22                      (FLAG_FOUND_TM_START + 21)
+#define FLAG_FOUND_TM23                      (FLAG_FOUND_TM_START + 22)
+#define FLAG_FOUND_TM24                      (FLAG_FOUND_TM_START + 23)
+#define FLAG_FOUND_TM25                      (FLAG_FOUND_TM_START + 24)
+#define FLAG_FOUND_TM26                      (FLAG_FOUND_TM_START + 25)
+#define FLAG_FOUND_TM27                      (FLAG_FOUND_TM_START + 26)
+#define FLAG_FOUND_TM28                      (FLAG_FOUND_TM_START + 27)
+#define FLAG_FOUND_TM29                      (FLAG_FOUND_TM_START + 28)
+#define FLAG_FOUND_TM30                      (FLAG_FOUND_TM_START + 29)
+#define FLAG_FOUND_TM31                      (FLAG_FOUND_TM_START + 30)
+#define FLAG_FOUND_TM32                      (FLAG_FOUND_TM_START + 31)
+#define FLAG_FOUND_TM33                      (FLAG_FOUND_TM_START + 32)
+#define FLAG_FOUND_TM34                      (FLAG_FOUND_TM_START + 33)
+#define FLAG_FOUND_TM35                      (FLAG_FOUND_TM_START + 34)
+#define FLAG_FOUND_TM36                      (FLAG_FOUND_TM_START + 35)
+#define FLAG_FOUND_TM37                      (FLAG_FOUND_TM_START + 36)
+#define FLAG_FOUND_TM38                      (FLAG_FOUND_TM_START + 37)
+#define FLAG_FOUND_TM39                      (FLAG_FOUND_TM_START + 38)
+#define FLAG_FOUND_TM40                      (FLAG_FOUND_TM_START + 39)
+#define FLAG_FOUND_TM41                      (FLAG_FOUND_TM_START + 40)
+#define FLAG_FOUND_TM42                      (FLAG_FOUND_TM_START + 41)
+#define FLAG_FOUND_TM43                      (FLAG_FOUND_TM_START + 42)
+#define FLAG_FOUND_TM44                      (FLAG_FOUND_TM_START + 43)
+#define FLAG_FOUND_TM45                      (FLAG_FOUND_TM_START + 44)
+#define FLAG_FOUND_TM46                      (FLAG_FOUND_TM_START + 45)
+#define FLAG_FOUND_TM47                      (FLAG_FOUND_TM_START + 46)
+#define FLAG_FOUND_TM48                      (FLAG_FOUND_TM_START + 47)
+#define FLAG_FOUND_TM49                      (FLAG_FOUND_TM_START + 48)
+#define FLAG_FOUND_TM50                      (FLAG_FOUND_TM_START + 49)
 #define FLAG_UNUSED_0x296  0x296 // Unused Flag
 #define FLAG_UNUSED_0x297  0x297 // Unused Flag
 #define FLAG_UNUSED_0x298  0x298 // Unused Flag

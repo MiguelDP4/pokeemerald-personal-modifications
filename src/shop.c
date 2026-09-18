@@ -38,6 +38,9 @@
 #include "constants/metatile_behaviors.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "constants/flags.h"
+#include "event_data.h"
+#include "pokemon.h"
 
 #define TAG_SCROLL_ARROW   2100
 #define TAG_ITEM_ICON_BASE 2110
@@ -1266,4 +1269,113 @@ void CreateDecorationShop2Menu(const u16 *itemsForSale)
     CreateShopMenu(MART_TYPE_DECOR2);
     SetShopItemsForSale(itemsForSale);
     SetShopMenuCallback(ScriptContext_Enable);
+}
+
+#define LILYCOVE_MART_TM_MAX_COUNT (NUM_TECHNICAL_MACHINES + 4)
+
+static EWRAM_DATA u16 sLilycoveDynamicMartList[LILYCOVE_MART_TM_MAX_COUNT] = {0};
+
+static const u16 sLilycoveDefaultAttackTMs[] = {
+    ITEM_TM_FIRE_BLAST,
+    ITEM_TM_THUNDER,
+    ITEM_TM_BLIZZARD,
+    ITEM_TM_HYPER_BEAM,
+};
+
+static const u16 sLilycoveDefaultDefenseTMs[] = {
+    ITEM_TM_PROTECT,
+    ITEM_TM_SAFEGUARD,
+    ITEM_TM_REFLECT,
+    ITEM_TM_LIGHT_SCREEN,
+};
+
+static bool8 HasFoundTM(u16 itemId)
+{
+    u8 i;
+    u16 flagId = FLAG_FOUND_TM_START + (itemId - ITEM_TM01);
+
+    if (FlagGet(flagId))
+        return TRUE;
+
+    if (CheckBagHasItem(itemId, 1))
+    {
+        FlagSet(flagId);
+        return TRUE;
+    }
+
+    if (CheckPCHasItem(itemId, 1))
+    {
+        FlagSet(flagId);
+        return TRUE;
+    }
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM) == itemId)
+        {
+            FlagSet(flagId);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static bool8 IsInItemList(const u16 *list, u8 count, u16 item)
+{
+    u8 i;
+    for (i = 0; i < count; i++)
+    {
+        if (list[i] == item)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+void LilycoveDeptStore_4F_ClerkLeft(void)
+{
+    u8 count = 0;
+    u16 itemId;
+
+    for (count = 0; count < ARRAY_COUNT(sLilycoveDefaultAttackTMs); count++)
+        sLilycoveDynamicMartList[count] = sLilycoveDefaultAttackTMs[count];
+
+    for (itemId = ITEM_TM01; itemId <= ITEM_TM50; itemId++)
+    {
+        if (IsInItemList(sLilycoveDefaultAttackTMs, ARRAY_COUNT(sLilycoveDefaultAttackTMs), itemId))
+            continue;
+
+        if (!HasFoundTM(itemId))
+            continue;
+
+        if (gBattleMoves[ItemIdToBattleMoveId(itemId)].power > 0)
+            sLilycoveDynamicMartList[count++] = itemId;
+    }
+
+    sLilycoveDynamicMartList[count] = ITEM_NONE;
+    CreatePokemartMenu(sLilycoveDynamicMartList);
+}
+
+void LilycoveDeptStore_4F_ClerkRight(void)
+{
+    u8 count = 0;
+    u16 itemId;
+
+    for (count = 0; count < ARRAY_COUNT(sLilycoveDefaultDefenseTMs); count++)
+        sLilycoveDynamicMartList[count] = sLilycoveDefaultDefenseTMs[count];
+
+    for (itemId = ITEM_TM01; itemId <= ITEM_TM50; itemId++)
+    {
+        if (IsInItemList(sLilycoveDefaultDefenseTMs, ARRAY_COUNT(sLilycoveDefaultDefenseTMs), itemId))
+            continue;
+
+        if (!HasFoundTM(itemId))
+            continue;
+
+        if (gBattleMoves[ItemIdToBattleMoveId(itemId)].power == 0)
+            sLilycoveDynamicMartList[count++] = itemId;
+    }
+
+    sLilycoveDynamicMartList[count] = ITEM_NONE;
+    CreatePokemartMenu(sLilycoveDynamicMartList);
 }

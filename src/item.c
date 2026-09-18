@@ -14,6 +14,7 @@
 #include "battle_pyramid_bag.h"
 #include "constants/items.h"
 #include "constants/hold_effects.h"
+#include "constants/flags.h"
 
 static bool8 CheckPyramidBagHasItem(u16 itemId, u16 count);
 static bool8 CheckPyramidBagHasSpace(u16 itemId, u16 count);
@@ -276,6 +277,8 @@ bool8 AddBagItem(u16 itemId, u16 count)
                     SetBagItemQuantity(&newItems[i].quantity, ownedCount + count);
                     memcpy(itemPocket->itemSlots, newItems, itemPocket->capacity * sizeof(struct ItemSlot));
                     Free(newItems);
+                    if (itemId >= ITEM_TM01 && itemId <= ITEM_TM50)
+                        FlagSet(FLAG_FOUND_TM_START + (itemId - ITEM_TM01));
                     return TRUE;
                 }
                 else
@@ -338,6 +341,8 @@ bool8 AddBagItem(u16 itemId, u16 count)
         }
         memcpy(itemPocket->itemSlots, newItems, itemPocket->capacity * sizeof(struct ItemSlot));
         Free(newItems);
+        if (itemId >= ITEM_TM01 && itemId <= ITEM_TM50)
+            FlagSet(FLAG_FOUND_TM_START + (itemId - ITEM_TM01));
         return TRUE;
     }
 }
