@@ -886,8 +886,8 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
             daycare->mons[i].steps++, validEggs++;
     }
 
-    // Check if an egg should be produced
-    if (daycare->offspringPersonality == 0 && validEggs == DAYCARE_MON_COUNT && (daycare->mons[1].steps & 0xFF) == 0xFF)
+    // Check if an egg should be produced (every 64 steps)
+    if (daycare->offspringPersonality == 0 && validEggs == DAYCARE_MON_COUNT && (daycare->mons[1].steps & 0x3F) == 0x3F)
     {
         u8 compatibility = GetDaycareCompatibilityScore(daycare);
         if (compatibility > (Random() * 100u) / USHRT_MAX)

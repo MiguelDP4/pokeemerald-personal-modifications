@@ -77,6 +77,7 @@ static const u8 sWindowVerticalScrollSpeeds[] = {
     [OPTIONS_TEXT_SPEED_SLOW] = 1,
     [OPTIONS_TEXT_SPEED_MID] = 2,
     [OPTIONS_TEXT_SPEED_FAST] = 4,
+    [OPTIONS_TEXT_SPEED_INSTANT] = 8,
 };
 
 static const struct GlyphWidthFunc sGlyphWidthFuncs[] =
@@ -326,17 +327,30 @@ void RunTextPrinters(void)
         {
             if (sTextPrinters[i].active)
             {
-                u16 renderCmd = RenderFont(&sTextPrinters[i]);
-                switch (renderCmd)
+                u16 renderCmd;
+                while (sTextPrinters[i].active)
                 {
-                case RENDER_PRINT:
-                    CopyWindowToVram(sTextPrinters[i].printerTemplate.windowId, COPYWIN_GFX);
-                case RENDER_UPDATE:
-                    if (sTextPrinters[i].callback != NULL)
-                        sTextPrinters[i].callback(&sTextPrinters[i].printerTemplate, renderCmd);
-                    break;
-                case RENDER_FINISH:
-                    sTextPrinters[i].active = FALSE;
+                    renderCmd = RenderFont(&sTextPrinters[i]);
+                    switch (renderCmd)
+                    {
+                    case RENDER_PRINT:
+                        if (gSaveBlock2Ptr->optionsTextSpeed == OPTIONS_TEXT_SPEED_INSTANT)
+                        {
+                            if (sTextPrinters[i].callback != NULL)
+                                sTextPrinters[i].callback(&sTextPrinters[i].printerTemplate, renderCmd);
+                            continue;
+                        }
+                        CopyWindowToVram(sTextPrinters[i].printerTemplate.windowId, COPYWIN_GFX);
+                    case RENDER_UPDATE:
+                        CopyWindowToVram(sTextPrinters[i].printerTemplate.windowId, COPYWIN_GFX);
+                        if (sTextPrinters[i].callback != NULL)
+                            sTextPrinters[i].callback(&sTextPrinters[i].printerTemplate, renderCmd);
+                        break;
+                    case RENDER_FINISH:
+                        CopyWindowToVram(sTextPrinters[i].printerTemplate.windowId, COPYWIN_GFX);
+                        sTextPrinters[i].active = FALSE;
+                        break;
+                    }
                     break;
                 }
             }
