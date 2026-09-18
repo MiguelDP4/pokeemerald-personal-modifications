@@ -575,6 +575,7 @@ EWRAM_DATA static bool8 sIsMonBeingMoved = 0;
 EWRAM_DATA static u8 sMovingMonOrigBoxId = 0;
 EWRAM_DATA static u8 sMovingMonOrigBoxPos = 0;
 EWRAM_DATA static bool8 sAutoActionOn = 0;
+EWRAM_DATA static bool8 sOpenedFromStartMenu = FALSE;
 
 // Main tasks
 static void EnterPokeStorage(u8);
@@ -1655,6 +1656,12 @@ void ShowPokemonStorageSystemPC(void)
     LockPlayerFieldControls();
 }
 
+void EnterPokeStorageFromStartMenu(void)
+{
+    sOpenedFromStartMenu = TRUE;
+    EnterPokeStorage(OPTION_MOVE_MONS);
+}
+
 static void FieldTask_ReturnToPcMenu(void)
 {
     u8 taskId;
@@ -1691,8 +1698,16 @@ static void CreateMainMenu(u8 whichMenu, s16 *windowIdPtr)
 static void CB2_ExitPokeStorage(void)
 {
     sPreviousBoxOption = GetCurrentBoxOption();
-    gFieldCallback = FieldTask_ReturnToPcMenu;
-    SetMainCallback2(CB2_ReturnToField);
+    if (sOpenedFromStartMenu)
+    {
+        sOpenedFromStartMenu = FALSE;
+        SetMainCallback2(CB2_ReturnToFieldWithOpenMenu);
+    }
+    else
+    {
+        gFieldCallback = FieldTask_ReturnToPcMenu;
+        SetMainCallback2(CB2_ReturnToField);
+    }
 }
 
 static s16 UNUSED StorageSystemGetNextMonIndex(struct BoxPokemon *box, s8 startIdx, u8 stopIdx, u8 mode)

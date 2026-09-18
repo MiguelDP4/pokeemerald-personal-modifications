@@ -18,6 +18,7 @@
 #include "field_weather.h"
 #include "graphics.h"
 #include "international_string_util.h"
+#include "item.h"
 #include "item_icon.h"
 #include "link.h"
 #include "list_menu.h"
@@ -4267,4 +4268,56 @@ void SetPlayerGotFirstFans(void)
 u8 Script_TryGainNewFanFromCounter(void)
 {
     return TryGainNewFanFromCounter(gSpecialVar_0x8004);
+}
+
+void TryGetNextRepel(void)
+{
+    u16 lastRepel = VarGet(VAR_REPEL_LAST_USED);
+    u16 nextRepel = ITEM_NONE;
+
+    if (lastRepel != ITEM_REPEL && lastRepel != ITEM_SUPER_REPEL && lastRepel != ITEM_MAX_REPEL)
+        lastRepel = ITEM_REPEL;
+
+    // Buffer the previous repel name into STR_VAR_2
+    CopyItemName(lastRepel, gStringVar2);
+
+    // Check if the player has the same repel
+    if (CheckBagHasItem(lastRepel, 1))
+    {
+        nextRepel = lastRepel;
+    }
+    else
+    {
+        // Otherwise look for any other available repel
+        if (CheckBagHasItem(ITEM_MAX_REPEL, 1))
+            nextRepel = ITEM_MAX_REPEL;
+        else if (CheckBagHasItem(ITEM_SUPER_REPEL, 1))
+            nextRepel = ITEM_SUPER_REPEL;
+        else if (CheckBagHasItem(ITEM_REPEL, 1))
+            nextRepel = ITEM_REPEL;
+    }
+
+    if (nextRepel != ITEM_NONE)
+    {
+        gSpecialVar_0x8004 = nextRepel;
+        CopyItemName(nextRepel, gStringVar1);
+        gSpecialVar_Result = TRUE;
+    }
+    else
+    {
+        gSpecialVar_Result = FALSE;
+    }
+}
+
+void UseNextRepel(void)
+{
+    u16 repelItem = gSpecialVar_0x8004;
+
+    if (repelItem == ITEM_REPEL || repelItem == ITEM_SUPER_REPEL || repelItem == ITEM_MAX_REPEL)
+    {
+        VarSet(VAR_REPEL_STEP_COUNT, GetItemHoldEffectParam(repelItem));
+        VarSet(VAR_REPEL_LAST_USED, repelItem);
+        RemoveBagItem(repelItem, 1);
+        CopyItemName(repelItem, gStringVar1);
+    }
 }
